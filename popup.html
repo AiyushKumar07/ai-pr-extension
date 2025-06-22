@@ -1,34 +1,244 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <style>
-    body { font-family: sans-serif; width: 250px; padding: 10px; }
-    input, select { width: 100%; margin-bottom: 8px; padding: 5px; }
-    button { width: 100%; padding: 6px; margin-bottom: 6px; background: #2ea44f; color: white; border: none; border-radius: 4px; }
-    #status { font-size: 13px; margin-top: 6px; min-height: 16px; }
-    #changeKeyBtn { background: #d03636; }
-    #apiSection { display: none; }
-  </style>
-</head>
-<body>
-  <h4>AI PR Generator</h4>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f5f5f5;
+        --text: #111;
+        --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --btn-text: white;
+        --glass-blur: blur(10px);
+        --border-color: rgba(0, 0, 0, 0.1);
+        --input-bg: rgba(255, 255, 255, 0.8);
+      }
 
-  <div id="apiSection">
-    <input id="apiKey" type="password" placeholder="OpenAI API Key" />
-    <button id="saveKeyBtn">Save Key</button>
-  </div>
-  <button id="changeKeyBtn">Change API Key</button>
+      body.dark {
+        --bg: #1f1f1f;
+        --text: #f1f1f1;
+        --btn-bg: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+        --btn-text: #111;
+        --glass-blur: blur(10px);
+        --border-color: rgba(255, 255, 255, 0.1);
+        --input-bg: rgba(0, 0, 0, 0.2);
+      }
 
-  <select id="modelSelect">
-    <option value="gpt-4">gpt-4</option>
-    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-    <option value="gpt-4o">gpt-4o</option>
-    <option value="gpt-4o-mini">gpt-4o-mini</option>
-  </select>
+      body {
+        font-family: "Inter", -apple-system, system-ui, sans-serif;
+        width: 300px;
+        padding: 16px;
+        color: var(--text);
+        background: var(--bg);
+        box-sizing: border-box;
+      }
 
-  <button id="generateBtn">Generate PR Description</button>
-  <div id="status"></div>
+      h4 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-weight: 600;
+        font-size: 18px;
+      }
 
-  <script src="popup.js"></script>
-</body>
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        box-sizing: border-box;
+        background: var(--input-bg);
+        color: var(--text);
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: var(--btn-bg);
+        color: var(--btn-text);
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 12px;
+        transition: all 0.2s ease;
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      #status {
+        font-size: 13px;
+        min-height: 18px;
+        margin-bottom: 12px;
+        text-align: center;
+      }
+
+      .toggle-theme {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text);
+      }
+
+      .toggle-theme:hover {
+        background: var(--text);
+        color: var(--bg);
+      }
+
+      .input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .input-wrapper input {
+        flex-grow: 1;
+        margin-bottom: 0;
+      }
+
+      .input-wrapper button {
+        width: 44px;
+        padding: 10px;
+        margin-bottom: 0;
+      }
+
+      #apiSection {
+        margin-bottom: 12px;
+      }
+
+      .dropdown {
+        position: relative;
+        margin-bottom: 12px;
+      }
+
+      #modelDropdownBtn {
+        justify-content: space-between;
+      }
+
+      #modelDropdownBtn::after {
+        content: "🔽";
+        font-size: 12px;
+        transition: transform 0.2s ease;
+      }
+
+      .dropdown.open #modelDropdownBtn::after {
+        transform: rotate(180deg);
+      }
+
+      #modelList {
+        display: none;
+        position: absolute;
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-top: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .dropdown.open #modelList {
+        display: block;
+      }
+
+      .group-title {
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
+        opacity: 0.7;
+        text-transform: uppercase;
+      }
+
+      .option {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .option:hover,
+      .option.selected {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      body.dark .option:hover,
+      body.dark .option.selected {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <h4>AI PR Generator</h4>
+
+    <div id="apiSection" style="display: none">
+      <div class="input-wrapper">
+        <input id="apiKey" type="password" placeholder="Enter new API Key" />
+        <button id="eyeBtn">👁️</button>
+      </div>
+      <button id="saveKeyBtn">Close & Save Key</button>
+    </div>
+
+    <button id="changeKeyBtn">🔑 Change API Key</button>
+
+    <div class="dropdown">
+      <button id="modelDropdownBtn">Select Model</button>
+      <div id="modelList">
+        <div class="group budget">
+          <div class="group-title">💸 Budget Models</div>
+          <div class="option" data-value="gpt-4.1-nano">gpt-4.1-nano</div>
+          <div class="option" data-value="gpt-3.5-turbo">gpt-3.5-turbo</div>
+          <div class="option" data-value="gpt-4.1-mini">gpt-4.1-mini</div>
+          <div class="option" data-value="gpt-4o-mini">gpt-4o-mini</div>
+        </div>
+        <div class="group mini">
+          <div class="group-title">🧠 Advanced Reasoning Minis</div>
+          <div class="option" data-value="gpt-o1-mini">gpt-o1-mini</div>
+          <div class="option" data-value="gpt-o2-mini">gpt-o2-mini</div>
+          <div class="option" data-value="gpt-o3-mini">gpt-o3-mini</div>
+          <div class="option" data-value="gpt-o4-mini">gpt-o4-mini</div>
+        </div>
+        <div class="group full">
+          <div class="group-title">⚡ Full Performance Models</div>
+          <div class="option" data-value="gpt-o1">gpt-o1</div>
+          <div class="option" data-value="gpt-o2">gpt-o2</div>
+          <div class="option" data-value="gpt-o3">gpt-o3</div>
+          <div class="option" data-value="gpt-o4">gpt-o4</div>
+        </div>
+        <div class="group premium">
+          <div class="group-title">✨ Premium & Multimodal</div>
+          <div class="option" data-value="gpt-4o">gpt-4o</div>
+          <div class="option" data-value="gpt-4.1">gpt-4.1</div>
+          <div class="option" data-value="gpt-o3-pro">gpt-o3-pro</div>
+        </div>
+      </div>
+    </div>
+
+    <button id="generateBtn">🚀 Generate PR Description</button>
+
+    <div id="status"></div>
+
+    <button class="toggle-theme" id="themeToggle">🌙 Enable Dark Mode</button>
+
+    <script src="popup.js"></script>
+  </body>
 </html>
