@@ -127,17 +127,34 @@ generateBtn.addEventListener('click', () => {
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     setStatus('⏳ Sending request...');
     console.log(`Injecting content script into tab ${tab.id}.`);
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: (key, model) => {
-        window.dispatchEvent(
-          new CustomEvent('ai-pr-gen', {
-            detail: { apiKey: key, model: model },
-          })
-        );
+
+    // Force-inject content.js before sending event
+    chrome.scripting.executeScript(
+      {
+        target: { tabId: tab.id },
+        files: ['content.js'],
       },
-      args: [currentKey, selectedModel],
-    });
+      () => {
+        // Dispatch custom event once content script is loaded
+        chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: (key, model) => {
+            window.dispatchEvent(
+              new CustomEvent('ai-pr-gen', {
+                detail: { apiKey: key, model: model },
+              })
+            );
+          },
+          args: [currentKey, selectedModel],
+        });
+
+        // Start 10s timeout to auto-reload if stuck
+        statusTimeout = setTimeout(() => {
+          console.warn('No response from content script. Reloading tab.');
+          chrome.tabs.reload(tab.id);
+        }, 10000);
+      }
+    );
   });
 });
 
@@ -151,7 +168,8 @@ themeToggle.addEventListener('click', () => {
 
 chrome.runtime.onMessage.addListener(msg => {
   if (msg.type === 'ai-pr-gen-status') {
-    console.log('Status message received from content script:', msg.message);
+    clearTimeout(statusTimeout);
+    console.log('Status message received:', msg.message);
     setStatus(msg.message.text, msg.message.color);
   }
 });
