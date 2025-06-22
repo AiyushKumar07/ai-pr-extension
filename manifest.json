@@ -1,10 +1,14 @@
 {
   "manifest_version": 3,
   "name": "AI PR Generator",
-  "description": "Generate GitHub PR titles and descriptions using OpenAI",
-  "version": "1.1",
+  "description": "Generate GitHub PR titles and descriptions using OpenAI or Google Gemini",
+  "version": "1.4",
   "permissions": ["storage", "scripting", "activeTab", "webRequest"],
-  "host_permissions": ["https://github.com/*", "https://api.openai.com/*"],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

@@ -21,9 +21,105 @@ function simulateInput(el, value) {
   el.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
+async function makeOpenAIRequest(apiKey, model, prompt) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(
+      `OpenAI API error: ${data.error?.message || res.statusText}`
+    );
+  }
+
+  if (!data.choices || !data.choices[0]) {
+    throw new Error('Empty or invalid response from OpenAI');
+  }
+
+  return data.choices[0].message.content || '';
+}
+
+async function makeGeminiRequest(apiKey, model, prompt) {
+  // Map Gemini model names to actual API model names
+  const modelMap = {
+    // Gemini 2.5 Series (Stable Models Only)
+    'gemini-2.5-pro': 'gemini-2.5-pro',
+    'gemini-2.5-flash': 'gemini-2.5-flash',
+
+    // Gemini 2.0 Series (Stable Models Only)
+    'gemini-2.0-flash': 'gemini-2.0-flash',
+    'gemini-2.0-flash-lite': 'gemini-2.0-flash-lite',
+
+    // Gemini 1.5 Series (Stable Models Only)
+    'gemini-1.5-flash': 'gemini-1.5-flash',
+    'gemini-1.5-flash-8b': 'gemini-1.5-flash-8b',
+    'gemini-1.5-pro': 'gemini-1.5-pro',
+
+    // Legacy models (keeping for backward compatibility)
+    'gemini-1.5-flash-latest': 'gemini-1.5-flash-latest',
+    'gemini-1.5-pro-latest': 'gemini-1.5-pro-latest',
+    'gemini-2.0-flash-exp': 'gemini-2.0-flash-exp',
+    'gemini-2.0-flash-latest-exp': 'gemini-2.0-flash-latest-exp',
+  };
+
+  const apiModel = modelMap[model] || model;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        },
+      }),
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(
+      `Gemini API error: ${data.error?.message || res.statusText}`
+    );
+  }
+
+  if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+    throw new Error('Empty or invalid response from Gemini');
+  }
+
+  return data.candidates[0].content.parts[0].text || '';
+}
+
 window.addEventListener('ai-pr-gen', async e => {
   console.log('Event "ai-pr-gen" received in content script.');
-  const { apiKey, model } = e.detail;
+  const { apiKey, model, provider } = e.detail;
 
   try {
     const { prTitleInput, prDescInput } = await waitForPRForm();
@@ -51,40 +147,44 @@ ${diff}
     console.log('Generated Prompt:', prompt);
 
     try {
-      postStatus('🤖 Sending to OpenAI...');
-      console.log('Sending request to OpenAI API...');
+      const providerName = provider === 'openai' ? 'OpenAI' : 'Gemini';
+      postStatus(`🤖 Sending to ${providerName}...`);
+      console.log(`Sending request to ${providerName} API...`);
 
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.3,
-        }),
-      });
+      let content;
+      if (provider === 'openai') {
+        content = await makeOpenAIRequest(apiKey, model, prompt);
+      } else if (provider === 'gemini') {
+        content = await makeGeminiRequest(apiKey, model, prompt);
+      } else {
+        throw new Error(`Unsupported provider: ${provider}`);
+      }
 
-      const data = await res.json();
-      console.log('Received response from OpenAI:', data);
+      console.log(`Received response from ${providerName}:`, content);
 
-      if (!data.choices || !data.choices[0]) {
-        postStatus('⚠️ Empty response from OpenAI', 'orange');
-        console.error('Empty or invalid response from OpenAI:', data);
+      if (!content) {
+        postStatus(`⚠️ Empty response from ${providerName}`, 'orange');
+        console.error(`Empty response from ${providerName}`);
         return;
       }
 
-      const content = data.choices[0].message.content || '';
       const [title, ...bodyLines] = content.split('\n');
       simulateInput(prTitleInput, title.trim());
       simulateInput(prDescInput, bodyLines.join('\n').trim());
-      postStatus('✅ PR details added!', 'green');
-      console.log('Successfully populated PR title and description.');
+      postStatus(`✅ PR details added via ${providerName}!`, 'green');
+      console.log(
+        `Successfully populated PR title and description using ${providerName}.`
+      );
     } catch (err) {
-      postStatus('❌ Error: ' + err.message, 'red');
-      console.error('OpenAI error:', err);
+      postStatus(
+        `❌ ${provider === 'openai' ? 'OpenAI' : 'Gemini'} Error: ` +
+          err.message,
+        'red'
+      );
+      console.error(
+        `${provider === 'openai' ? 'OpenAI' : 'Gemini'} error:`,
+        err
+      );
     }
   } catch (err) {
     postStatus('🚫 ' + err.message, 'red');
