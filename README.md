@@ -3,7 +3,7 @@
 > A powerful Chrome extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models or Google's Gemini models by analyzing your GitHub diff.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue?logo=google-chrome)](https://chrome.google.com/webstore/detail/ai-pr-generator) [![SOON]]
-[![Version](https://img.shields.io/badge/version-1.4-brightgreen.svg)](https://github.com/yourusername/ai-pr-extension)
+[![Version](https://img.shields.io/badge/version-1.5-brightgreen.svg)](https://github.com/yourusername/ai-pr-extension)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## ✨ Features
@@ -61,6 +61,31 @@
    - Click "🔑 Change API Keys"
    - Enter your OpenAI and/or Gemini API keys
    - Click "Close & Save Keys"
+
+## 🔑 Key Management
+
+The extension provides comprehensive API key management:
+
+### **Adding Keys**
+
+- Click "🔑 Change API Keys" to open the key management panel
+- Enter your API keys in the respective input fields
+- Use the eye button (👁️) to toggle visibility of your keys
+- Click "Close & Save Keys" to save your changes
+
+### **Deleting Keys**
+
+- Click the "🗑️ Delete" button next to any key to remove it
+- A confirmation dialog will appear to prevent accidental deletion
+- Deleted keys are immediately removed from storage and the UI
+- You can always add keys back later
+
+### **Security Features**
+
+- Keys are stored locally in your browser's secure storage
+- Keys are masked by default for privacy
+- Confirmation dialogs prevent accidental key deletion
+- No keys are ever transmitted to external servers except for API calls
 
 ## 📖 How to Use
 
@@ -399,6 +424,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Email**: aiyushkanojia@gmail.com
 
 ## 📅 Changelog
+
+### v1.5.0
+
+- 🗑️ Added delete functionality for API keys
+- ✨ Individual delete buttons for OpenAI and Gemini keys
+- 🔒 Enhanced security with confirmation dialogs
+- 🎨 Improved key management UI with better layout
+- 📝 Updated documentation for key deletion feature
+- 🐛 Fixed key management workflow
 
 ### v1.4.0
 

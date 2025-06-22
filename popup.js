@@ -5,6 +5,8 @@ const saveKeyBtn = document.getElementById('saveKeyBtn');
 const apiSection = document.getElementById('apiSection');
 const openaiEyeBtn = document.getElementById('openaiEyeBtn');
 const geminiEyeBtn = document.getElementById('geminiEyeBtn');
+const deleteOpenaiBtn = document.getElementById('deleteOpenaiBtn');
+const deleteGeminiBtn = document.getElementById('deleteGeminiBtn');
 const generateBtn = document.getElementById('generateBtn');
 const statusEl = document.getElementById('status');
 const themeToggle = document.getElementById('themeToggle');
@@ -180,7 +182,7 @@ openaiEyeBtn.addEventListener('click', () => {
   openaiKeyInput.value = showOpenaiKey
     ? tempOpenaiKey || openaiKey || ''
     : tempOpenaiKey || (openaiKey ? getMaskedKey(openaiKey) : '');
-  openaiEyeBtn.textContent = showOpenaiKey ? '🙈' : '👁️';
+  openaiEyeBtn.textContent = showOpenaiKey ? '🙈 Hide Key' : '👁️ View Key';
 });
 
 geminiEyeBtn.addEventListener('click', () => {
@@ -189,7 +191,7 @@ geminiEyeBtn.addEventListener('click', () => {
   geminiKeyInput.value = showGeminiKey
     ? tempGeminiKey || geminiKey || ''
     : tempGeminiKey || (geminiKey ? getMaskedKey(geminiKey) : '');
-  geminiEyeBtn.textContent = showGeminiKey ? '🙈' : '👁️';
+  geminiEyeBtn.textContent = showGeminiKey ? '🙈 Hide Key' : '👁️ View Key';
 });
 
 openaiKeyInput.addEventListener('input', () => {
@@ -198,6 +200,31 @@ openaiKeyInput.addEventListener('input', () => {
 
 geminiKeyInput.addEventListener('input', () => {
   tempGeminiKey = geminiKeyInput.value;
+});
+
+// Delete button functionality
+deleteOpenaiBtn.addEventListener('click', () => {
+  if (confirm('Are you sure you want to delete the OpenAI API key?')) {
+    openaiKey = '';
+    tempOpenaiKey = '';
+    openaiKeyInput.value = '';
+    chrome.storage.local.remove(['openaiKey'], () => {
+      setStatus('OpenAI API key deleted!', 'green');
+      console.log('OpenAI API key deleted.');
+    });
+  }
+});
+
+deleteGeminiBtn.addEventListener('click', () => {
+  if (confirm('Are you sure you want to delete the Gemini API key?')) {
+    geminiKey = '';
+    tempGeminiKey = '';
+    geminiKeyInput.value = '';
+    chrome.storage.local.remove(['geminiKey'], () => {
+      setStatus('Gemini API key deleted!', 'green');
+      console.log('Gemini API key deleted.');
+    });
+  }
 });
 
 saveKeyBtn.addEventListener('click', () => {
@@ -270,8 +297,8 @@ saveKeyBtn.addEventListener('click', () => {
     geminiKeyInput.value = geminiKey ? getMaskedKey(geminiKey) : '';
     showOpenaiKey = false;
     showGeminiKey = false;
-    openaiEyeBtn.textContent = '👁️';
-    geminiEyeBtn.textContent = '👁️';
+    openaiEyeBtn.textContent = '👁️ View Key';
+    geminiEyeBtn.textContent = '👁️ View Key';
 
     setStatus('API keys saved!', 'green');
     console.log('API keys saved.');
