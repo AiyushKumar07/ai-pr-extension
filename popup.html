@@ -195,8 +195,31 @@
         text-transform: uppercase;
       }
 
+      .subgroup-title {
+        padding: 6px 12px 4px 20px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text);
+        opacity: 0.6;
+        text-transform: uppercase;
+        background: rgba(0, 0, 0, 0.02);
+        margin-top: 4px;
+      }
+
+      body.dark .subgroup-title {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .subgroup {
+        margin-bottom: 4px;
+      }
+
+      .subgroup:last-child {
+        margin-bottom: 0;
+      }
+
       .option {
-        padding: 10px 12px;
+        padding: 10px 12px 10px 20px;
         cursor: pointer;
         font-size: 14px;
       }
@@ -210,6 +233,66 @@
       body.dark .option.selected {
         background-color: rgba(255, 255, 255, 0.1);
       }
+
+      .delete-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        margin-left: 8px;
+        transition: all 0.2s ease;
+      }
+
+      .delete-btn:hover {
+        background: #ff3742;
+        transform: translateY(-1px);
+      }
+
+      .key-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .key-header h5 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .button-row button {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .view-btn {
+        background: var(--btn-bg);
+        color: var(--btn-text);
+      }
+
+      .view-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
     </style>
   </head>
   <body>
@@ -217,26 +300,36 @@
 
     <div id="apiSection" style="display: none">
       <div class="key-section" id="openaiKeySection">
-        <h5>🔵 OpenAI API Key</h5>
+        <div class="key-header">
+          <h5>🔵 OpenAI API Key</h5>
+        </div>
         <div class="input-wrapper">
           <input
             id="openaiKey"
             type="password"
             placeholder="Enter OpenAI API Key"
           />
-          <button id="openaiEyeBtn">👁️</button>
+        </div>
+        <div class="button-row">
+          <button class="view-btn" id="openaiEyeBtn">👁️ View Key</button>
+          <button class="delete-btn" id="deleteOpenaiBtn">🗑️ Delete Key</button>
         </div>
       </div>
 
       <div class="key-section" id="geminiKeySection">
-        <h5>🟡 Gemini API Key</h5>
+        <div class="key-header">
+          <h5>🟡 Gemini API Key</h5>
+        </div>
         <div class="input-wrapper">
           <input
             id="geminiKey"
             type="password"
             placeholder="Enter Gemini API Key"
           />
-          <button id="geminiEyeBtn">👁️</button>
+        </div>
+        <div class="button-row">
+          <button class="view-btn" id="geminiEyeBtn">👁️ View Key</button>
+          <button class="delete-btn" id="deleteGeminiBtn">🗑️ Delete Key</button>
         </div>
       </div>
 
@@ -248,123 +341,145 @@
     <div class="dropdown">
       <button id="modelDropdownBtn">Select Model</button>
       <div id="modelList">
-        <div class="group budget">
-          <div class="group-title">💸 Budget Models</div>
-          <div class="option" data-value="gpt-4.1-nano" data-provider="openai">
-            gpt-4.1-nano
+        <div class="group openai-models">
+          <div class="group-title">🔵 OpenAI Models</div>
+
+          <div class="subgroup budget">
+            <div class="subgroup-title">💸 Budget Models</div>
+            <div
+              class="option"
+              data-value="gpt-4.1-nano"
+              data-provider="openai"
+            >
+              gpt-4.1-nano
+            </div>
+            <div
+              class="option"
+              data-value="gpt-3.5-turbo"
+              data-provider="openai"
+            >
+              gpt-3.5-turbo
+            </div>
+            <div
+              class="option"
+              data-value="gpt-4.1-mini"
+              data-provider="openai"
+            >
+              gpt-4.1-mini
+            </div>
+            <div class="option" data-value="gpt-4o-mini" data-provider="openai">
+              gpt-4o-mini
+            </div>
           </div>
-          <div class="option" data-value="gpt-3.5-turbo" data-provider="openai">
-            gpt-3.5-turbo
+
+          <div class="subgroup mini">
+            <div class="subgroup-title">🧠 Advanced Reasoning Minis</div>
+            <div class="option" data-value="gpt-o1-mini" data-provider="openai">
+              gpt-o1-mini
+            </div>
+            <div class="option" data-value="gpt-o2-mini" data-provider="openai">
+              gpt-o2-mini
+            </div>
+            <div class="option" data-value="gpt-o3-mini" data-provider="openai">
+              gpt-o3-mini
+            </div>
+            <div class="option" data-value="gpt-o4-mini" data-provider="openai">
+              gpt-o4-mini
+            </div>
           </div>
-          <div class="option" data-value="gpt-4.1-mini" data-provider="openai">
-            gpt-4.1-mini
+
+          <div class="subgroup full">
+            <div class="subgroup-title">⚡ Full Performance Models</div>
+            <div class="option" data-value="gpt-o1" data-provider="openai">
+              gpt-o1
+            </div>
+            <div class="option" data-value="gpt-o2" data-provider="openai">
+              gpt-o2
+            </div>
+            <div class="option" data-value="gpt-o3" data-provider="openai">
+              gpt-o3
+            </div>
+            <div class="option" data-value="gpt-o4" data-provider="openai">
+              gpt-o4
+            </div>
           </div>
-          <div class="option" data-value="gpt-4o-mini" data-provider="openai">
-            gpt-4o-mini
-          </div>
-        </div>
-        <div class="group mini">
-          <div class="group-title">🧠 Advanced Reasoning Minis</div>
-          <div class="option" data-value="gpt-o1-mini" data-provider="openai">
-            gpt-o1-mini
-          </div>
-          <div class="option" data-value="gpt-o2-mini" data-provider="openai">
-            gpt-o2-mini
-          </div>
-          <div class="option" data-value="gpt-o3-mini" data-provider="openai">
-            gpt-o3-mini
-          </div>
-          <div class="option" data-value="gpt-o4-mini" data-provider="openai">
-            gpt-o4-mini
-          </div>
-        </div>
-        <div class="group full">
-          <div class="group-title">⚡ Full Performance Models</div>
-          <div class="option" data-value="gpt-o1" data-provider="openai">
-            gpt-o1
-          </div>
-          <div class="option" data-value="gpt-o2" data-provider="openai">
-            gpt-o2
-          </div>
-          <div class="option" data-value="gpt-o3" data-provider="openai">
-            gpt-o3
-          </div>
-          <div class="option" data-value="gpt-o4" data-provider="openai">
-            gpt-o4
-          </div>
-        </div>
-        <div class="group premium">
-          <div class="group-title">✨ Premium & Multimodal</div>
-          <div class="option" data-value="gpt-4o" data-provider="openai">
-            gpt-4o
-          </div>
-          <div class="option" data-value="gpt-4.1" data-provider="openai">
-            gpt-4.1
-          </div>
-          <div class="option" data-value="gpt-o3-pro" data-provider="openai">
-            gpt-o3-pro
+
+          <div class="subgroup premium">
+            <div class="subgroup-title">✨ Premium & Multimodal</div>
+            <div class="option" data-value="gpt-4o" data-provider="openai">
+              gpt-4o
+            </div>
+            <div class="option" data-value="gpt-4.1" data-provider="openai">
+              gpt-4.1
+            </div>
+            <div class="option" data-value="gpt-o3-pro" data-provider="openai">
+              gpt-o3-pro
+            </div>
           </div>
         </div>
 
-        <!-- Gemini Models -->
-        <div class="group gemini-2-5">
-          <div class="group-title">🟡 Gemini 2.5 Series</div>
-          <div
-            class="option"
-            data-value="gemini-2.5-pro"
-            data-provider="gemini"
-          >
-            gemini-2.5-pro
-          </div>
-          <div
-            class="option"
-            data-value="gemini-2.5-flash"
-            data-provider="gemini"
-          >
-            gemini-2.5-flash
-          </div>
-        </div>
+        <div class="group gemini-models">
+          <div class="group-title">🟡 Gemini Models</div>
 
-        <div class="group gemini-2-0">
-          <div class="group-title">🟡 Gemini 2.0 Series</div>
-          <div
-            class="option"
-            data-value="gemini-2.0-flash"
-            data-provider="gemini"
-          >
-            gemini-2.0-flash
+          <div class="subgroup gemini-2-5">
+            <div class="subgroup-title">Gemini 2.5 Series</div>
+            <div
+              class="option"
+              data-value="gemini-2.5-pro"
+              data-provider="gemini"
+            >
+              gemini-2.5-pro
+            </div>
+            <div
+              class="option"
+              data-value="gemini-2.5-flash"
+              data-provider="gemini"
+            >
+              gemini-2.5-flash
+            </div>
           </div>
-          <div
-            class="option"
-            data-value="gemini-2.0-flash-lite"
-            data-provider="gemini"
-          >
-            gemini-2.0-flash-lite
-          </div>
-        </div>
 
-        <div class="group gemini-1-5">
-          <div class="group-title">🟡 Gemini 1.5 Series</div>
-          <div
-            class="option"
-            data-value="gemini-1.5-flash"
-            data-provider="gemini"
-          >
-            gemini-1.5-flash
+          <div class="subgroup gemini-2-0">
+            <div class="subgroup-title">Gemini 2.0 Series</div>
+            <div
+              class="option"
+              data-value="gemini-2.0-flash"
+              data-provider="gemini"
+            >
+              gemini-2.0-flash
+            </div>
+            <div
+              class="option"
+              data-value="gemini-2.0-flash-lite"
+              data-provider="gemini"
+            >
+              gemini-2.0-flash-lite
+            </div>
           </div>
-          <div
-            class="option"
-            data-value="gemini-1.5-flash-8b"
-            data-provider="gemini"
-          >
-            gemini-1.5-flash-8b
-          </div>
-          <div
-            class="option"
-            data-value="gemini-1.5-pro"
-            data-provider="gemini"
-          >
-            gemini-1.5-pro
+
+          <div class="subgroup gemini-1-5">
+            <div class="subgroup-title">Gemini 1.5 Series</div>
+            <div
+              class="option"
+              data-value="gemini-1.5-flash"
+              data-provider="gemini"
+            >
+              gemini-1.5-flash
+            </div>
+            <div
+              class="option"
+              data-value="gemini-1.5-flash-8b"
+              data-provider="gemini"
+            >
+              gemini-1.5-flash-8b
+            </div>
+            <div
+              class="option"
+              data-value="gemini-1.5-pro"
+              data-provider="gemini"
+            >
+              gemini-1.5-pro
+            </div>
           </div>
         </div>
       </div>
