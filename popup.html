@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -30,7 +30,11 @@
       }
 
       body {
-        font-family: "Inter", -apple-system, system-ui, sans-serif;
+        font-family:
+          'Inter',
+          -apple-system,
+          system-ui,
+          sans-serif;
         width: 300px;
         padding: 16px;
         color: var(--text);
@@ -56,7 +60,7 @@
         box-sizing: border-box;
         background: var(--input-bg);
         color: var(--text);
-        font-family: "Inter", sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 14px;
       }
 
@@ -71,7 +75,7 @@
         cursor: pointer;
         margin-bottom: 12px;
         transition: all 0.2s ease;
-        font-family: "Inter", sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -124,6 +128,27 @@
         margin-bottom: 12px;
       }
 
+      .key-section {
+        margin-bottom: 16px;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--input-bg);
+        transition:
+          opacity 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .key-section h5 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .key-section.hidden {
+        display: none;
+      }
+
       .dropdown {
         position: relative;
         margin-bottom: 12px;
@@ -134,7 +159,7 @@
       }
 
       #modelDropdownBtn::after {
-        content: "🔽";
+        content: '🔽';
         font-size: 12px;
         transition: transform 0.2s ease;
       }
@@ -191,44 +216,156 @@
     <h4>AI PR Generator</h4>
 
     <div id="apiSection" style="display: none">
-      <div class="input-wrapper">
-        <input id="apiKey" type="password" placeholder="Enter new API Key" />
-        <button id="eyeBtn">👁️</button>
+      <div class="key-section" id="openaiKeySection">
+        <h5>🔵 OpenAI API Key</h5>
+        <div class="input-wrapper">
+          <input
+            id="openaiKey"
+            type="password"
+            placeholder="Enter OpenAI API Key"
+          />
+          <button id="openaiEyeBtn">👁️</button>
+        </div>
       </div>
-      <button id="saveKeyBtn">Close & Save Key</button>
+
+      <div class="key-section" id="geminiKeySection">
+        <h5>🟡 Gemini API Key</h5>
+        <div class="input-wrapper">
+          <input
+            id="geminiKey"
+            type="password"
+            placeholder="Enter Gemini API Key"
+          />
+          <button id="geminiEyeBtn">👁️</button>
+        </div>
+      </div>
+
+      <button id="saveKeyBtn">Close & Save Keys</button>
     </div>
 
-    <button id="changeKeyBtn">🔑 Change API Key</button>
+    <button id="changeKeyBtn">🔑 Change API Keys</button>
 
     <div class="dropdown">
       <button id="modelDropdownBtn">Select Model</button>
       <div id="modelList">
         <div class="group budget">
           <div class="group-title">💸 Budget Models</div>
-          <div class="option" data-value="gpt-4.1-nano">gpt-4.1-nano</div>
-          <div class="option" data-value="gpt-3.5-turbo">gpt-3.5-turbo</div>
-          <div class="option" data-value="gpt-4.1-mini">gpt-4.1-mini</div>
-          <div class="option" data-value="gpt-4o-mini">gpt-4o-mini</div>
+          <div class="option" data-value="gpt-4.1-nano" data-provider="openai">
+            gpt-4.1-nano
+          </div>
+          <div class="option" data-value="gpt-3.5-turbo" data-provider="openai">
+            gpt-3.5-turbo
+          </div>
+          <div class="option" data-value="gpt-4.1-mini" data-provider="openai">
+            gpt-4.1-mini
+          </div>
+          <div class="option" data-value="gpt-4o-mini" data-provider="openai">
+            gpt-4o-mini
+          </div>
         </div>
         <div class="group mini">
           <div class="group-title">🧠 Advanced Reasoning Minis</div>
-          <div class="option" data-value="gpt-o1-mini">gpt-o1-mini</div>
-          <div class="option" data-value="gpt-o2-mini">gpt-o2-mini</div>
-          <div class="option" data-value="gpt-o3-mini">gpt-o3-mini</div>
-          <div class="option" data-value="gpt-o4-mini">gpt-o4-mini</div>
+          <div class="option" data-value="gpt-o1-mini" data-provider="openai">
+            gpt-o1-mini
+          </div>
+          <div class="option" data-value="gpt-o2-mini" data-provider="openai">
+            gpt-o2-mini
+          </div>
+          <div class="option" data-value="gpt-o3-mini" data-provider="openai">
+            gpt-o3-mini
+          </div>
+          <div class="option" data-value="gpt-o4-mini" data-provider="openai">
+            gpt-o4-mini
+          </div>
         </div>
         <div class="group full">
           <div class="group-title">⚡ Full Performance Models</div>
-          <div class="option" data-value="gpt-o1">gpt-o1</div>
-          <div class="option" data-value="gpt-o2">gpt-o2</div>
-          <div class="option" data-value="gpt-o3">gpt-o3</div>
-          <div class="option" data-value="gpt-o4">gpt-o4</div>
+          <div class="option" data-value="gpt-o1" data-provider="openai">
+            gpt-o1
+          </div>
+          <div class="option" data-value="gpt-o2" data-provider="openai">
+            gpt-o2
+          </div>
+          <div class="option" data-value="gpt-o3" data-provider="openai">
+            gpt-o3
+          </div>
+          <div class="option" data-value="gpt-o4" data-provider="openai">
+            gpt-o4
+          </div>
         </div>
         <div class="group premium">
           <div class="group-title">✨ Premium & Multimodal</div>
-          <div class="option" data-value="gpt-4o">gpt-4o</div>
-          <div class="option" data-value="gpt-4.1">gpt-4.1</div>
-          <div class="option" data-value="gpt-o3-pro">gpt-o3-pro</div>
+          <div class="option" data-value="gpt-4o" data-provider="openai">
+            gpt-4o
+          </div>
+          <div class="option" data-value="gpt-4.1" data-provider="openai">
+            gpt-4.1
+          </div>
+          <div class="option" data-value="gpt-o3-pro" data-provider="openai">
+            gpt-o3-pro
+          </div>
+        </div>
+
+        <!-- Gemini Models -->
+        <div class="group gemini-2-5">
+          <div class="group-title">🟡 Gemini 2.5 Series</div>
+          <div
+            class="option"
+            data-value="gemini-2.5-pro"
+            data-provider="gemini"
+          >
+            gemini-2.5-pro
+          </div>
+          <div
+            class="option"
+            data-value="gemini-2.5-flash"
+            data-provider="gemini"
+          >
+            gemini-2.5-flash
+          </div>
+        </div>
+
+        <div class="group gemini-2-0">
+          <div class="group-title">🟡 Gemini 2.0 Series</div>
+          <div
+            class="option"
+            data-value="gemini-2.0-flash"
+            data-provider="gemini"
+          >
+            gemini-2.0-flash
+          </div>
+          <div
+            class="option"
+            data-value="gemini-2.0-flash-lite"
+            data-provider="gemini"
+          >
+            gemini-2.0-flash-lite
+          </div>
+        </div>
+
+        <div class="group gemini-1-5">
+          <div class="group-title">🟡 Gemini 1.5 Series</div>
+          <div
+            class="option"
+            data-value="gemini-1.5-flash"
+            data-provider="gemini"
+          >
+            gemini-1.5-flash
+          </div>
+          <div
+            class="option"
+            data-value="gemini-1.5-flash-8b"
+            data-provider="gemini"
+          >
+            gemini-1.5-flash-8b
+          </div>
+          <div
+            class="option"
+            data-value="gemini-1.5-pro"
+            data-provider="gemini"
+          >
+            gemini-1.5-pro
+          </div>
         </div>
       </div>
     </div>
