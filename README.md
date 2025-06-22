@@ -2,7 +2,7 @@
 
 > A powerful Chrome extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models by analyzing your GitHub diff.
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue?logo=google-chrome)](https://chrome.google.com/webstore/detail/ai-pr-generator)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue?logo=google-chrome)](https://chrome.google.com/webstore/detail/ai-pr-generator) [SOON]
 [![Version](https://img.shields.io/badge/version-1.1-brightgreen.svg)](https://github.com/yourusername/ai-pr-extension)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
