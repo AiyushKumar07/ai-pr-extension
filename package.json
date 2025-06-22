@@ -1,0 +1,22 @@
+{
+  "name": "ai-pr-extension",
+  "version": "1.1.0",
+  "description": "Generate GitHub PR titles and descriptions using OpenAI",
+  "main": "background.js",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.1.0"
+  },
+  "keywords": [
+    "chrome-extension",
+    "github",
+    "openai",
+    "pr-generator"
+  ],
+  "author": "",
+  "license": "MIT"
+} 

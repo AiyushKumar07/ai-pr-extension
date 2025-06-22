@@ -12,6 +12,12 @@ const dropdown = document.querySelector('.dropdown');
 
 let currentKey = '';
 let selectedModel = 'gpt-4o-mini';
+let showKey = false;
+let tempKeyInput = '';
+
+function getMaskedKey(key) {
+  return '•'.repeat(key.length); // Or use '*' if preferred
+}
 
 function updateSelectedModelUI(model) {
   modelDropdownBtn.textContent = model;
@@ -37,17 +43,20 @@ modelList.addEventListener('click', e => {
 });
 
 window.onload = () => {
+  console.log('Popup loaded.');
   chrome.storage.local.get(['openaiKey', 'openaiModel', 'theme'], data => {
     if (data.openaiKey) {
       currentKey = data.openaiKey;
-      apiKeyInput.value = '********';
+      apiKeyInput.value = getMaskedKey(currentKey);
     }
+    console.log('Stored data loaded:', data);
     if (data.openaiModel) {
       selectedModel = data.openaiModel;
     } else {
-      selectedModel = 'gpt-4o-mini'; 
+      selectedModel = 'gpt-4o-mini';
     }
     updateSelectedModelUI(selectedModel);
+    console.log('Selected model set to:', selectedModel);
 
     if (data.theme === 'dark') {
       document.body.classList.add('dark');
@@ -60,43 +69,64 @@ window.onload = () => {
 
 changeKeyBtn.addEventListener('click', () => {
   const isPanelOpen = apiSection.style.display === 'block';
-  apiSection.style.display = isPanelOpen ? 'none' : 'block';
-  changeKeyBtn.innerHTML = isPanelOpen
-    ? '🔑 Change API Key'
-    : '🔼 Close Key Panel';
-  generateBtn.style.display = isPanelOpen ? 'block' : 'none';
-  if (isPanelOpen) apiKeyInput.value = '********';
+
+  if (!isPanelOpen) {
+    apiSection.style.display = 'block';
+    generateBtn.style.display = 'none';
+    changeKeyBtn.innerHTML = '🔼 Close Key Panel';
+    apiKeyInput.type = showKey ? 'text' : 'password';
+    apiKeyInput.value = showKey
+      ? tempKeyInput || currentKey
+      : getMaskedKey(tempKeyInput || currentKey);
+  } else {
+    apiSection.style.display = 'none';
+    generateBtn.style.display = 'block';
+    changeKeyBtn.innerHTML = '🔑 Change API Key';
+  }
+
   setStatus('');
 });
 
 eyeBtn.addEventListener('click', () => {
-  const isPassword = apiKeyInput.type === 'password';
-  apiKeyInput.type = isPassword ? 'text' : 'password';
-  if(apiKeyInput.type === 'text') {
-    apiKeyInput.value = currentKey;
-  }
-  eyeBtn.textContent = isPassword ? '🙈' : '👁️';
+  showKey = !showKey;
+  apiKeyInput.type = showKey ? 'text' : 'password';
+  apiKeyInput.value = showKey ? currentKey : getMaskedKey(currentKey);
+  eyeBtn.textContent = showKey ? '🙈' : '👁️';
+});
+
+apiKeyInput.addEventListener('input', () => {
+  tempKeyInput = apiKeyInput.value;
 });
 
 saveKeyBtn.addEventListener('click', () => {
   const newKey = apiKeyInput.value.trim();
-  if (!newKey || newKey === '********') return setStatus('Key cannot be empty', 'red');
+  if (!newKey || newKey === getMaskedKey(currentKey)) {
+    return setStatus('Key cannot be empty or unchanged', 'red');
+  }
 
   chrome.storage.local.set({ openaiKey: newKey }, () => {
     currentKey = newKey;
+    tempKeyInput = '';
     apiSection.style.display = 'none';
     generateBtn.style.display = 'block';
     changeKeyBtn.innerHTML = '🔑 Change API Key';
-    apiKeyInput.value = '********';
+    apiKeyInput.value = getMaskedKey(currentKey);
+    showKey = false;
     setStatus('API key saved!', 'green');
+    console.log('API key saved.');
   });
 });
 
 generateBtn.addEventListener('click', () => {
-  if (!currentKey) return setStatus('Set your API key first', 'red');
+  console.log('Generate button clicked.');
+  if (!currentKey) {
+    console.error('API key not set.');
+    return setStatus('Set your API key first', 'red');
+  }
 
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     setStatus('⏳ Sending request...');
+    console.log(`Injecting content script into tab ${tab.id}.`);
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: (key, model) => {
@@ -121,6 +151,7 @@ themeToggle.addEventListener('click', () => {
 
 chrome.runtime.onMessage.addListener(msg => {
   if (msg.type === 'ai-pr-gen-status') {
+    console.log('Status message received from content script:', msg.message);
     setStatus(msg.message.text, msg.message.color);
   }
 });
