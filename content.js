@@ -1,24 +1,26 @@
-window.addEventListener("ai-pr-gen", async (e) => {
+window.addEventListener('ai-pr-gen', async e => {
   const { apiKey, model } = e.detail;
 
-  const prTitleInput = document.querySelector("#pull_request_title");
-  const prDescInput = document.querySelector("#pull_request_body");
+  const prTitleInput = document.querySelector('#pull_request_title');
+  const prDescInput = document.querySelector('#pull_request_body');
 
   if (!prTitleInput || !prDescInput) {
-    postStatus("PR form not found", "red");
+    postStatus('PR form not found', 'red');
     return;
   }
 
-  postStatus("Reading diff...");
+  postStatus('Reading diff...');
 
   const getDiff = () => {
-    const files = [...document.querySelectorAll(".file")];
-    return files.map((file) => {
-      const filename = file.querySelector(".file-info a")?.textContent.trim();
-      const lines = [...file.querySelectorAll(".blob-code")];
-      const code = lines.map((l) => l.textContent).join("\n");
-      return `File: ${filename}\n${code}`;
-    }).join("\n\n");
+    const files = [...document.querySelectorAll('.file')];
+    return files
+      .map(file => {
+        const filename = file.querySelector('.file-info a')?.textContent.trim();
+        const lines = [...file.querySelectorAll('.blob-code')];
+        const code = lines.map(l => l.textContent).join('\n');
+        return `File: ${filename}\n${code}`;
+      })
+      .join('\n\n');
   };
 
   const prompt = `
@@ -39,42 +41,42 @@ ${getDiff()}
 `;
 
   try {
-    postStatus("Sending to OpenAI...");
+    postStatus('Sending to OpenAI...');
 
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model,
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.3
-      })
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+      }),
     });
 
     const data = await res.json();
 
     if (!data.choices || !data.choices[0]) {
-      postStatus("Empty response from OpenAI", "orange");
+      postStatus('Empty response from OpenAI', 'orange');
       return;
     }
 
-    const content = data.choices[0].message.content || "";
-    const [title, ...bodyLines] = content.split("\n");
+    const content = data.choices[0].message.content || '';
+    const [title, ...bodyLines] = content.split('\n');
     prTitleInput.value = title.trim();
-    prDescInput.value = bodyLines.join("\n").trim();
-    postStatus("PR details added!", "green");
+    prDescInput.value = bodyLines.join('\n').trim();
+    postStatus('PR details added!', 'green');
   } catch (err) {
-    postStatus("Error: " + err.message, "red");
-    console.error("OpenAI error:", err);
+    postStatus('Error: ' + err.message, 'red');
+    console.error('OpenAI error:', err);
   }
 });
 
-function postStatus(text, color = "black") {
+function postStatus(text, color = 'black') {
   chrome.runtime.sendMessage({
-    type: "ai-pr-gen-status",
-    message: { text, color }
+    type: 'ai-pr-gen-status',
+    message: { text, color },
   });
 }
