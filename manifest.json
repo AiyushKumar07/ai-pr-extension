@@ -3,7 +3,6 @@
   "name": "AI PR Generator",
   "description": "Generate GitHub PR titles and descriptions using OpenAI",
   "version": "1.1",
-  "license": "MIT",
   "permissions": ["storage", "scripting", "activeTab", "webRequest"],
   "host_permissions": ["https://github.com/*", "https://api.openai.com/*"],
   "action": {
