@@ -1,20 +1,21 @@
 # 🤖 AI PR Generator
 
-> A powerful Chrome extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models by analyzing your GitHub diff.
+> A powerful Chrome extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models or Google's Gemini models by analyzing your GitHub diff.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue?logo=google-chrome)](https://chrome.google.com/webstore/detail/ai-pr-generator) [![SOON]]
-[![Version](https://img.shields.io/badge/version-1.1-brightgreen.svg)](https://github.com/yourusername/ai-pr-extension)
+[![Version](https://img.shields.io/badge/version-1.4-brightgreen.svg)](https://github.com/yourusername/ai-pr-extension)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## ✨ Features
 
 - **🎯 Smart PR Generation**: Automatically analyzes your GitHub diff and generates meaningful PR titles and descriptions
-- **🤖 Multiple AI Models**: Support for various OpenAI models (GPT-4, GPT-3.5, GPT-4o-mini)
+- **🤖 Multiple AI Providers**: Support for both OpenAI GPT models and Google Gemini models
 - **📝 Structured Output**: Generates PRs with conventional commit types and organized markdown descriptions
 - **🎨 Dark/Light Theme**: Beautiful UI with theme switching capability
-- **🔒 Secure**: Your API key is stored locally and never shared
+- **🔒 Secure**: Your API keys are stored locally and never shared
 - **⚡ Fast**: Works instantly on GitHub compare pages
 - **📱 Responsive**: Clean, modern interface that works on any screen size
+- **🔄 Provider Switching**: Easily switch between OpenAI and Gemini models
 
 ## 🚀 Quick Start
 
@@ -41,17 +42,25 @@
 
 ### Setup
 
-1. **Get OpenAI API Key**
+1. **Get API Keys**
+
+   **For OpenAI:**
 
    - Visit [OpenAI Platform](https://platform.openai.com/api-keys)
    - Create a new API key
    - Copy the key (you'll need it for the extension)
 
+   **For Gemini:**
+
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key
+   - Copy the key (you'll need it for the extension)
+
 2. **Configure Extension**
    - Click the extension icon in your Chrome toolbar
-   - Click "🔑 Change API Key"
-   - Enter your OpenAI API key
-   - Click "Close & Save Key"
+   - Click "🔑 Change API Keys"
+   - Enter your OpenAI and/or Gemini API keys
+   - Click "Close & Save Keys"
 
 ## 📖 How to Use
 
@@ -66,7 +75,7 @@
 2. **Generate PR Content**
 
    - Click the AI PR Generator extension icon
-   - Select your preferred AI model (default: GPT-4o-mini)
+   - Select your preferred AI model and provider (OpenAI or Gemini)
    - Click "🚀 Generate PR"
    - Wait for the AI to analyze your diff and generate content
 
@@ -78,10 +87,33 @@
 
 ### Supported Models
 
+**🔵 OpenAI Models:**
+
 - **GPT-4o-mini** (Recommended) - Fast and cost-effective
-- **GPT-4** - Most capable, higher cost
-- **GPT-3.5-turbo** - Good balance of speed and quality
 - **GPT-4o** - Latest model with enhanced capabilities
+- **GPT-4.1** - High-performance model
+- **GPT-3.5-turbo** - Good balance of speed and quality
+- **GPT-o1-mini, GPT-o2-mini, GPT-o3-mini, GPT-o4-mini** - Advanced reasoning models
+- **GPT-o1, GPT-o2, GPT-o3, GPT-o4** - Full performance models
+- **GPT-o3-pro** - Premium multimodal model
+
+**🟡 Gemini Models:**
+
+**Gemini 2.5 Series:**
+
+- **gemini-2.5-pro** - Enhanced thinking and reasoning, multimodal understanding, advanced coding
+- **gemini-2.5-flash** - Adaptive thinking, cost efficiency
+
+**Gemini 2.0 Series:**
+
+- **gemini-2.0-flash** - Next generation features, speed, and realtime streaming
+- **gemini-2.0-flash-lite** - Cost efficiency and low latency
+
+**Gemini 1.5 Series:**
+
+- **gemini-1.5-flash** - Fast and versatile performance across diverse tasks
+- **gemini-1.5-flash-8b** - High volume and lower intelligence tasks
+- **gemini-1.5-pro** - High-quality responses
 
 ## 🛠️ Development
 
@@ -170,7 +202,7 @@ const diffData = files
 
 #### AI Integration
 
-Uses OpenAI's Chat Completions API with structured prompts for consistent output:
+Supports both OpenAI's Chat Completions API and Google's Gemini API with structured prompts for consistent output:
 
 ```javascript
 // Example: OpenAI API call
@@ -186,6 +218,34 @@ const response = await fetch('https://api.openai.com/v1/chat/completions', {
     temperature: 0.3,
   }),
 });
+
+// Example: Gemini API call
+const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.3,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 2048,
+      },
+    }),
+  }
+);
 ```
 
 ## 🔧 Configuration
@@ -199,12 +259,13 @@ No environment variables are required. All configuration is done through the ext
 - `storage` - Store API keys and preferences locally
 - `scripting` - Inject content scripts into GitHub pages
 - `activeTab` - Access current tab for diff analysis
-- `webRequest` - Make API calls to OpenAI
+- `webRequest` - Make API calls to OpenAI and Gemini
 
 ### Host Permissions
 
 - `https://github.com/*` - Access GitHub pages
 - `https://api.openai.com/*` - Make OpenAI API calls
+- `https://generativelanguage.googleapis.com/*` - Make Gemini API calls
 
 ## 🎨 Customization
 
@@ -231,8 +292,9 @@ The UI uses CSS custom properties for easy theming:
 
 1. **"API key not set" Error**
 
-   - Make sure you've entered your OpenAI API key in the extension popup
+   - Make sure you've entered your API key for the selected provider (OpenAI or Gemini)
    - Verify the key is valid and has sufficient credits
+   - Check that you're using the correct key for the selected model
 
 2. **"PR form not found" Error**
 
@@ -246,9 +308,22 @@ The UI uses CSS custom properties for easy theming:
    - Clear browser cache and cookies
 
 4. **OpenAI API Errors**
-   - Verify your API key is correct
+
+   - Verify your OpenAI API key is correct
    - Check your OpenAI account for rate limits or billing issues
    - Ensure you have sufficient API credits
+
+5. **Gemini API Errors**
+
+   - Verify your Gemini API key is correct
+   - Check your Google AI Studio account for rate limits
+   - Ensure the selected Gemini model is available in your region
+   - Some Gemini models may be experimental and require special access
+
+6. **Provider-specific Issues**
+   - Make sure you have the correct API key for the selected provider
+   - Switch between OpenAI and Gemini models to test different providers
+   - Check the status bar for provider-specific error messages
 
 ### Debug Mode
 
@@ -323,7 +398,34 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Discussions**: [GitHub Discussions](https://github.com/AiyushKumar07/ai-pr-extension/discussions)
 - **Email**: aiyushkanojia@gmail.com
 
-## 🔄 Changelog
+## 📅 Changelog
+
+### v1.4.0
+
+- 🧹 Removed all Gemini preview/experimental models for better stability
+- ✨ Focused on production-ready Gemini models only
+- 🔧 Updated content script to support stable model variants
+- 📝 Updated documentation to reflect current stable model selection
+- 🎯 Improved reliability by removing experimental features
+- 🐛 Fixed model mapping for stable Gemini models
+
+### v1.3.0
+
+- ✨ Added comprehensive support for all Gemini 2.5, 2.0, and 1.5 models
+- 🔄 Enhanced model organization with version-based grouping
+- 📝 Updated documentation with detailed model descriptions
+- 🎯 Improved model selection UI with better categorization
+- 🔧 Updated content script to support all new Gemini model variants
+- 🐛 Fixed model mapping for new Gemini models
+
+### v1.2.0
+
+- ✨ Added support for Google Gemini models
+- 🔄 Implemented provider switching between OpenAI and Gemini
+- 🔑 Enhanced API key management for multiple providers
+- 🎨 Improved UI with visual provider indicators
+- 📝 Updated documentation for dual provider support
+- 🐛 Fixed key validation and error handling
 
 ### v1.1.0
 
