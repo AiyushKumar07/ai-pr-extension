@@ -15,13 +15,19 @@ function waitForPRForm(timeout = 3000) {
   });
 }
 
+function simulateInput(el, value) {
+  el.value = value;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
 window.addEventListener('ai-pr-gen', async e => {
   console.log('Event "ai-pr-gen" received in content script.');
   const { apiKey, model } = e.detail;
 
   try {
     const { prTitleInput, prDescInput } = await waitForPRForm();
-    postStatus('Reading diff...');
+    postStatus('📖 Reading diff...');
     const diff = parseDiff();
 
     console.log('Extracted Diff:', diff);
@@ -45,7 +51,7 @@ ${diff}
     console.log('Generated Prompt:', prompt);
 
     try {
-      postStatus('Sending to OpenAI...');
+      postStatus('🤖 Sending to OpenAI...');
       console.log('Sending request to OpenAI API...');
 
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -65,23 +71,23 @@ ${diff}
       console.log('Received response from OpenAI:', data);
 
       if (!data.choices || !data.choices[0]) {
-        postStatus('Empty response from OpenAI', 'orange');
+        postStatus('⚠️ Empty response from OpenAI', 'orange');
         console.error('Empty or invalid response from OpenAI:', data);
         return;
       }
 
       const content = data.choices[0].message.content || '';
       const [title, ...bodyLines] = content.split('\n');
-      prTitleInput.value = title.trim();
-      prDescInput.value = bodyLines.join('\n').trim();
-      postStatus('PR details added!', 'green');
+      simulateInput(prTitleInput, title.trim());
+      simulateInput(prDescInput, bodyLines.join('\n').trim());
+      postStatus('✅ PR details added!', 'green');
       console.log('Successfully populated PR title and description.');
     } catch (err) {
-      postStatus('Error: ' + err.message, 'red');
+      postStatus('❌ Error: ' + err.message, 'red');
       console.error('OpenAI error:', err);
     }
   } catch (err) {
-    postStatus(err.message, 'red');
+    postStatus('🚫 ' + err.message, 'red');
     return;
   }
 });
@@ -163,7 +169,7 @@ function parseDiff() {
   return diffData;
 }
 
-function postStatus(text, color = 'black') {
+function postStatus(text, color = 'white') {
   try {
     chrome.runtime.sendMessage(
       {
@@ -171,11 +177,9 @@ function postStatus(text, color = 'black') {
         message: { text, color },
       },
       () => {
-        if (chrome.runtime.lastError) {
-          console.warn(
-            'Could not send status message:',
-            chrome.runtime.lastError.message
-          );
+        const err = chrome.runtime.lastError?.message;
+        if (err && !err.includes('The message port closed')) {
+          console.warn('Could not send status message:', err);
         }
       }
     );
