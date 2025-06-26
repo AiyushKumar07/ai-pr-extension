@@ -134,9 +134,15 @@ Return only:
 A PR title prefixed with conventional commit types (feat, fix, chore, refactor, etc.)
 Two line breaks
 Then the PR description using the following markdown structure:
-**_What Changed_** : Bullet point summary of changes (e.g., updated APIs, refactored services, added endpoints, etc.)
-**_Why_** : Reason for the change (e.g., bug fix, performance improvement, feature request, tech debt, etc.)
-**_Additional Notes_** : Any additional notes or context that would be helpful for the reviewer.
+**_Purpose_** : Briefly describe the purpose of the PR.
+**_Key Files Changed_** : List the key files changed in the PR with what was changed.
+**_Summary of Changes_** : Bullet point summary of changes (e.g., updated APIs, refactored services, added endpoints, etc.)
+**_Notes_** : Any additional notes or context that would be helpful for the reviewer.
+**_Approach (Optional)_** : Explain the approach or logic or architectural decisions.
+**_Bug Fixes (Optional)_** : If the PR is a bug fix, list the issue fixes.
+**_Refactoring (Optional)_** : If the PR is a refactoring, list the structural/code improvements.
+**_Chores (Optional)_** : If the PR is a chore, list the tooling, dependency updates, clean-up.
+**_Testing (Optional)_** : If the PR is a test, list the test cases added/updated.
 
 
 Only return the title first, then two line breaks, then the markdown content.
