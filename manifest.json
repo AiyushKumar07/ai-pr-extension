@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "AI PR Generator",
-  "description": "Generate GitHub PR titles and descriptions using OpenAI or Google Gemini",
+  "name": "Github PR-Scribe-AI",
+  "description": "Enhance your GitHub workflow with AI-generated pull request titles and descriptions.",
   "version": "1.4",
   "permissions": ["storage", "scripting", "activeTab", "webRequest"],
   "host_permissions": [
