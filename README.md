@@ -1,8 +1,8 @@
 # 🤖 AI PR Generator
 
-> A powerful Chrome extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models or Google's Gemini models by analyzing your GitHub diff.
+> A powerful browser extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models or Google's Gemini models by analyzing your GitHub diff.
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue?logo=google-chrome)](https://chrome.google.com/webstore/detail/ai-pr-generator) [![SOON]]
+[![Web Store](https://img.shields.io/badge/Web%20Store-Install-blue?logo=google-chrome)](https://webstore.example.com/ai-pr-generator) [![SOON]]
 [![Version](https://img.shields.io/badge/version-1.5-brightgreen.svg)](https://github.com/yourusername/ai-pr-extension)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -21,10 +21,9 @@
 
 ### Installation
 
-1. **From Chrome Web Store** (Soon)
-
-   - Visit the [Chrome Web Store](https://chrome.google.com/webstore/detail/ai-pr-generator)
-   - Click "Add to Chrome"
+1. **From Web Store** (Soon)
+   - Visit the [Web Store](https://chromewebstore.google.com/detail/github-pr-scribe-ai/ajnplipmiafledgelgdajdfepjamafml/reviews)
+   - Click "Add to Browser"
    - The extension will be installed automatically
 
 2. **Manual Installation** (Development)
@@ -45,19 +44,17 @@
 1. **Get API Keys**
 
    **For OpenAI:**
-
    - Visit [OpenAI Platform](https://platform.openai.com/api-keys)
    - Create a new API key
    - Copy the key (you'll need it for the extension)
 
    **For Gemini:**
-
    - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
    - Create a new API key
    - Copy the key (you'll need it for the extension)
 
 2. **Configure Extension**
-   - Click the extension icon in your Chrome toolbar
+   - Click the extension icon in your browser toolbar
    - Click "🔑 Change API Keys"
    - Enter your OpenAI and/or Gemini API keys
    - Click "Close & Save Keys"
@@ -92,13 +89,11 @@ The extension provides comprehensive API key management:
 ### Generating a PR
 
 1. **Navigate to GitHub**
-
    - Go to any GitHub repository
    - Create a new pull request or navigate to the compare page
    - Make sure you're on a page with the URL pattern: `https://github.com/*/*/compare/*`
 
 2. **Generate PR Content**
-
    - Click the AI PR Generator extension icon
    - Select your preferred AI model and provider (OpenAI or Gemini)
    - Click "🚀 Generate PR"
@@ -146,7 +141,7 @@ The extension provides comprehensive API key management:
 
 - Node.js (v16 or higher)
 - npm or yarn
-- Chrome browser
+- Modern web browser
 
 ### Local Development Setup
 
@@ -163,9 +158,8 @@ The extension provides comprehensive API key management:
    npm install
    ```
 
-3. **Load Extension in Chrome**
-
-   - Open Chrome and go to `chrome://extensions/`
+3. **Load Extension in Browser**
+   - Open your browser and go to the extensions page
    - Enable "Developer mode" (toggle in top right)
    - Click "Load unpacked"
    - Select the `ai-pr-extension` folder
@@ -316,30 +310,25 @@ The UI uses CSS custom properties for easy theming:
 ### Common Issues
 
 1. **"API key not set" Error**
-
    - Make sure you've entered your API key for the selected provider (OpenAI or Gemini)
    - Verify the key is valid and has sufficient credits
    - Check that you're using the correct key for the selected model
 
 2. **"PR form not found" Error**
-
    - Ensure you're on a GitHub compare page (`https://github.com/*/*/compare/*`)
    - Refresh the page and try again
 
 3. **Extension not working**
-
-   - Check that the extension is enabled in `chrome://extensions/`
+   - Check that the extension is enabled in your browser's extensions page
    - Try reloading the extension
    - Clear browser cache and cookies
 
 4. **OpenAI API Errors**
-
    - Verify your OpenAI API key is correct
    - Check your OpenAI account for rate limits or billing issues
    - Ensure you have sufficient API credits
 
 5. **Gemini API Errors**
-
    - Verify your Gemini API key is correct
    - Check your Google AI Studio account for rate limits
    - Ensure the selected Gemini model is available in your region
@@ -374,14 +363,12 @@ We welcome contributions! Here's how you can help:
    ```
 
 3. **Make Your Changes**
-
    - Follow the existing code style
    - Add tests if applicable
    - Update documentation
 
 4. **Test Your Changes**
-
-   - Load the extension in Chrome
+   - Load the extension in your browser
    - Test on GitHub compare pages
    - Ensure all functionality works
 
@@ -415,7 +402,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [OpenAI](https://openai.com/) for providing the AI models
 - [GitHub](https://github.com/) for the platform integration
-- [Chrome Extensions](https://developer.chrome.com/docs/extensions/) for the extension framework
+- [Browser Extensions](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions) for the extension framework
 
 ## 📞 Support
 
