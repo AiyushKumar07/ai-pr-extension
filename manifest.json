@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Github PR-Scribe-AI",
-  "description": "Enhance your GitHub workflow with AI-generated pull request titles and descriptions.",
-  "version": "1.5",
-  "permissions": ["storage", "scripting", "activeTab", "webRequest"],
+  "description": "Enhance your GitHub workflow with AI-generated pull request titles and descriptions using OpenAI GPT or Google Gemini models.",
+  "version": "1.5.1",
+  "permissions": ["storage", "scripting", "activeTab"],
   "host_permissions": [
     "https://github.com/*",
     "https://api.openai.com/*",

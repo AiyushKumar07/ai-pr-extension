@@ -12,7 +12,7 @@
     "prettier": "^3.1.0"
   },
   "keywords": [
-    "chrome-extension",
+    "browser-extension",
     "github",
     "openai",
     "pr-generator"
