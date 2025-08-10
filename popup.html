@@ -17,6 +17,11 @@
         --glass-blur: blur(10px);
         --border-color: rgba(0, 0, 0, 0.1);
         --input-bg: rgba(255, 255, 255, 0.8);
+        --section-bg: rgba(255, 255, 255, 0.9);
+        --accent-color: #667eea;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
       }
 
       body.dark {
@@ -27,6 +32,11 @@
         --glass-blur: blur(10px);
         --border-color: rgba(255, 255, 255, 0.1);
         --input-bg: rgba(0, 0, 0, 0.2);
+        --section-bg: rgba(0, 0, 0, 0.3);
+        --accent-color: #89f7fe;
+        --success-color: #34d399;
+        --warning-color: #fbbf24;
+        --error-color: #f87171;
       }
 
       body {
@@ -35,75 +45,150 @@
           -apple-system,
           system-ui,
           sans-serif;
-        width: 300px;
-        padding: 16px;
+        width: 350px;
+        padding: 20px;
         color: var(--text);
         background: var(--bg);
         box-sizing: border-box;
+        margin: 0;
       }
 
       h4 {
         text-align: center;
         margin-top: 0;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
+        font-weight: 700;
+        font-size: 20px;
+        background: var(--btn-bg);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .main-section {
+        background: var(--section-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
         font-weight: 600;
-        font-size: 18px;
+        font-size: 16px;
+        color: var(--accent-color);
+      }
+
+      .section-description {
+        font-size: 13px;
+        color: var(--text);
+        opacity: 0.8;
+        margin-bottom: 16px;
+        line-height: 1.4;
       }
 
       input,
       select {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         margin-bottom: 12px;
         border-radius: 8px;
-        border: 1px solid var(--border-color);
+        border: 2px solid var(--border-color);
         box-sizing: border-box;
         background: var(--input-bg);
         color: var(--text);
         font-family: 'Inter', sans-serif;
         font-size: 14px;
+        transition: all 0.2s ease;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
       }
 
       button {
         width: 100%;
-        padding: 12px;
+        padding: 14px;
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
         background: var(--btn-bg);
         color: var(--btn-text);
         font-weight: 600;
         cursor: pointer;
         margin-bottom: 12px;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
+        position: relative;
+        overflow: hidden;
       }
 
       button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        border: 2px solid var(--border-color);
+        color: var(--text);
+      }
+
+      .btn-secondary:hover {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+      }
+
+      .btn-success {
+        background: var(--success-color);
+        color: white;
+        display: flex;
+      }
+
+      .btn-danger {
+        background: var(--error-color);
+        color: white;
       }
 
       #status {
         font-size: 13px;
         min-height: 18px;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         text-align: center;
+        padding: 8px;
+        border-radius: 6px;
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
       }
 
       .toggle-theme {
         background: transparent;
-        border: 1px solid var(--border-color);
+        border: 2px solid var(--border-color);
         color: var(--text);
+        margin-top: 8px;
       }
 
       .toggle-theme:hover {
         background: var(--text);
         color: var(--bg);
+        border-color: var(--text);
       }
 
       .input-wrapper {
@@ -119,13 +204,10 @@
       }
 
       .input-wrapper button {
-        width: 44px;
-        padding: 10px;
+        width: auto;
+        padding: 12px;
         margin-bottom: 0;
-      }
-
-      #apiSection {
-        margin-bottom: 12px;
+        min-width: 44px;
       }
 
       .key-section {
@@ -134,15 +216,14 @@
         border: 1px solid var(--border-color);
         border-radius: 8px;
         background: var(--input-bg);
-        transition:
-          opacity 0.2s ease,
-          border-color 0.2s ease;
+        transition: all 0.2s ease;
       }
 
       .key-section h5 {
         margin: 0 0 8px 0;
         font-size: 14px;
         font-weight: 600;
+        color: var(--accent-color);
       }
 
       .key-section.hidden {
@@ -151,11 +232,14 @@
 
       .dropdown {
         position: relative;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
       }
 
       #modelDropdownBtn {
         justify-content: space-between;
+        background: var(--section-bg);
+        border: 2px solid var(--border-color);
+        color: var(--text);
       }
 
       #modelDropdownBtn::after {
@@ -172,8 +256,8 @@
         display: none;
         position: absolute;
         width: 100%;
-        background: var(--bg);
-        border: 1px solid var(--border-color);
+        background: var(--section-bg);
+        border: 2px solid var(--border-color);
         border-radius: 8px;
         margin-top: 4px;
         max-height: 200px;
@@ -193,6 +277,8 @@
         color: var(--text);
         opacity: 0.7;
         text-transform: uppercase;
+        background: var(--input-bg);
+        border-bottom: 1px solid var(--border-color);
       }
 
       .subgroup-title {
@@ -222,6 +308,7 @@
         padding: 10px 12px 10px 20px;
         cursor: pointer;
         font-size: 14px;
+        transition: background-color 0.2s ease;
       }
 
       .option:hover,
@@ -235,19 +322,21 @@
       }
 
       .delete-btn {
-        background: #ff4757;
+        background: var(--error-color);
         color: white;
         border: none;
-        border-radius: 4px;
-        padding: 6px 10px;
+        border-radius: 6px;
+        padding: 8px 12px;
         font-size: 12px;
         cursor: pointer;
         margin-left: 8px;
         transition: all 0.2s ease;
+        width: auto;
+        margin-bottom: 0;
       }
 
       .delete-btn:hover {
-        background: #ff3742;
+        background: #dc2626;
         transform: translateY(-1px);
       }
 
@@ -255,24 +344,25 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
       }
 
       .key-header h5 {
         margin: 0;
         font-size: 14px;
         font-weight: 600;
+        color: var(--accent-color);
       }
 
       .button-row {
         display: flex;
         gap: 8px;
-        margin-top: 8px;
+        margin-top: 12px;
       }
 
       .button-row button {
         flex: 1;
-        padding: 8px 12px;
+        padding: 10px 12px;
         font-size: 12px;
         border-radius: 6px;
         border: none;
@@ -282,6 +372,7 @@
         align-items: center;
         justify-content: center;
         gap: 4px;
+        margin-bottom: 0;
       }
 
       .view-btn {
@@ -293,12 +384,171 @@
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
+
+      .custom-value-item {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding: 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--input-bg);
+        transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .custom-value-item:hover {
+        border-color: var(--accent-color);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+        transform: translateY(-1px);
+      }
+
+      .custom-value-item .input-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        width: 100%;
+      }
+
+      .custom-value-item input {
+        flex: 1;
+        margin-bottom: 0;
+        padding: 12px 14px;
+        font-size: 14px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        min-height: 44px;
+      }
+
+      .custom-value-item input:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+      }
+
+      .custom-value-item input:placeholder-shown {
+        border-color: var(--border-color);
+        background: var(--input-bg);
+      }
+
+      .custom-value-item input:not(:placeholder-shown) {
+        background: var(--section-bg);
+        border-color: var(--accent-color);
+      }
+
+      .custom-value-item .key-input {
+        flex: 0 0 45%;
+      }
+
+      .custom-value-item .value-input {
+        flex: 0 0 55%;
+      }
+
+      .custom-value-item .remove-btn {
+        background: var(--error-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+        font-weight: 600;
+      }
+
+      .custom-value-item .remove-btn:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+      }
+
+      .custom-values-info {
+        font-size: 12px;
+        color: var(--text);
+        opacity: 0.8;
+        margin-bottom: 16px;
+        text-align: center;
+        line-height: 1.4;
+        padding: 12px;
+        background: var(--section-bg);
+        border-radius: 8px;
+        border: 2px solid var(--border-color);
+      }
+
+      .custom-values-info .highlight {
+        color: var(--accent-color);
+        font-weight: 600;
+      }
+
+      .hardcoded-values {
+        background: var(--section-bg);
+        border: 2px solid var(--accent-color);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+      }
+
+      .hardcoded-values h6 {
+        margin: 0 0 8px 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent-color);
+      }
+
+      .hardcoded-values ul {
+        margin: 0;
+        padding-left: 20px;
+        font-size: 12px;
+        color: var(--text);
+        opacity: 0.8;
+      }
+
+      .hardcoded-values li {
+        margin-bottom: 4px;
+      }
+
+      .generate-section {
+        background: var(--section-bg);
+        border: 2px solid var(--accent-color);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        text-align: center;
+      }
+
+      .generate-section button {
+        background: var(--btn-bg);
+        font-size: 16px;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 0;
+      }
+
+      .hidden {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
     <h4>Github PR-Scribe-AI</h4>
 
-    <div id="apiSection" style="display: none">
+    <!-- API Keys Section -->
+    <div class="main-section" id="apiSection" style="display: none">
+      <div class="section-header">
+        <span>🔑</span>
+        <span>API Configuration</span>
+      </div>
+      <div class="section-description">
+        Configure your API keys for OpenAI or Gemini models. You only need to
+        set up the provider you plan to use.
+      </div>
+
       <div class="key-section" id="openaiKeySection">
         <div class="key-header">
           <h5>🔵 OpenAI API Key</h5>
@@ -333,159 +583,273 @@
         </div>
       </div>
 
-      <button id="saveKeyBtn">Close & Save Keys</button>
+      <button class="btn-success" id="saveKeyBtn">💾 Save & Close</button>
     </div>
 
-    <button id="changeKeyBtn">🔑 Change API Keys</button>
+    <!-- Custom Values Section -->
+    <div class="main-section" id="customValuesSection" style="display: none">
+      <div class="section-header">
+        <span>⚙️</span>
+        <span>Custom Prompt Properties</span>
+      </div>
+      <div class="section-description">
+        Add custom key-value pairs that will be included in your PR prompts for
+        better context and personalization.
+        <span class="highlight"
+          >You can leave values blank - the system will use built-in defaults
+          when no custom values are provided.</span
+        >
+      </div>
 
-    <div class="dropdown">
-      <button id="modelDropdownBtn">Select Model</button>
-      <div id="modelList">
-        <div class="group openai-models">
-          <div class="group-title">🔵 OpenAI Models</div>
+      <div class="hardcoded-values">
+        <h6>
+          📋 Built-in Optional Sections (Can be used if your PR contains these
+          sections)
+        </h6>
+        <p
+          style="
+            font-size: 11px;
+            opacity: 0.8;
+            margin: 8px 0 12px 0;
+            font-style: italic;
+          "
+        >
+          These sections are automatically included when its relevant to the PR.
+        </p>
+        <ul>
+          <li>
+            <strong>Approach:</strong> Explain the approach, logic, or
+            architectural decisions
+          </li>
+          <li>
+            <strong>Bug Fixes:</strong> List the issue fixes if it's a bug fix
+          </li>
+          <li>
+            <strong>Refactoring:</strong> List structural/code improvements if
+            refactoring
+          </li>
+          <li>
+            <strong>Chores:</strong> List tooling, dependency updates, or
+            clean-up
+          </li>
+          <li><strong>Testing:</strong> List test cases added/updated</li>
+        </ul>
+      </div>
 
-          <div class="subgroup budget">
-            <div class="subgroup-title">💸 Budget Models</div>
-            <div
-              class="option"
-              data-value="gpt-4.1-nano"
-              data-provider="openai"
-            >
-              gpt-4.1-nano
+      <div id="customValuesList">
+        <!-- Custom values will be dynamically added here -->
+      </div>
+
+      <div class="button-row">
+        <button class="view-btn" id="addCustomValueBtn">
+          ➕ Add Custom Property
+        </button>
+      </div>
+      <div class="button-row">
+        <button class="btn-success" id="saveCustomValuesBtn">
+          💾 Save Custom Properties
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Controls -->
+    <div class="main-section">
+      <div class="section-header">
+        <span>🔧</span>
+        <span>Settings</span>
+      </div>
+
+      <button class="btn-secondary" id="changeKeyBtn">
+        🔑 Change API Keys
+      </button>
+      <button class="btn-secondary" id="customValuesBtn">
+        ⚙️ Custom Prompt Values
+      </button>
+
+      <div class="dropdown">
+        <button id="modelDropdownBtn">🤖 Select Model</button>
+        <div id="modelList">
+          <div class="group openai-models">
+            <div class="group-title">🔵 OpenAI Models</div>
+
+            <div class="subgroup budget">
+              <div class="subgroup-title">💸 Budget Models</div>
+              <div
+                class="option"
+                data-value="gpt-4.1-nano"
+                data-provider="openai"
+              >
+                gpt-4.1-nano
+              </div>
+              <div
+                class="option"
+                data-value="gpt-3.5-turbo"
+                data-provider="openai"
+              >
+                gpt-3.5-turbo
+              </div>
+              <div
+                class="option"
+                data-value="gpt-4.1-mini"
+                data-provider="openai"
+              >
+                gpt-4.1-mini
+              </div>
+              <div
+                class="option"
+                data-value="gpt-4o-mini"
+                data-provider="openai"
+              >
+                gpt-4o-mini
+              </div>
             </div>
-            <div
-              class="option"
-              data-value="gpt-3.5-turbo"
-              data-provider="openai"
-            >
-              gpt-3.5-turbo
+
+            <div class="subgroup mini">
+              <div class="subgroup-title">🧠 Advanced Reasoning Minis</div>
+              <div
+                class="option"
+                data-value="gpt-o1-mini"
+                data-provider="openai"
+              >
+                gpt-o1-mini
+              </div>
+              <div
+                class="option"
+                data-value="gpt-o2-mini"
+                data-provider="openai"
+              >
+                gpt-o2-mini
+              </div>
+              <div
+                class="option"
+                data-value="gpt-o3-mini"
+                data-provider="openai"
+              >
+                gpt-o3-mini
+              </div>
+              <div
+                class="option"
+                data-value="gpt-o4-mini"
+                data-provider="openai"
+              >
+                gpt-o4-mini
+              </div>
             </div>
-            <div
-              class="option"
-              data-value="gpt-4.1-mini"
-              data-provider="openai"
-            >
-              gpt-4.1-mini
+
+            <div class="subgroup full">
+              <div class="subgroup-title">⚡ Full Performance Models</div>
+              <div class="option" data-value="gpt-o1" data-provider="openai">
+                gpt-o1
+              </div>
+              <div class="option" data-value="gpt-o2" data-provider="openai">
+                gpt-o2
+              </div>
+              <div class="option" data-value="gpt-o3" data-provider="openai">
+                gpt-o3
+              </div>
+              <div class="option" data-value="gpt-o4" data-provider="openai">
+                gpt-o4
+              </div>
             </div>
-            <div class="option" data-value="gpt-4o-mini" data-provider="openai">
-              gpt-4o-mini
+
+            <div class="subgroup premium">
+              <div class="subgroup-title">✨ Premium & Multimodal</div>
+              <div class="option" data-value="gpt-4o" data-provider="openai">
+                gpt-4o
+              </div>
+              <div class="option" data-value="gpt-4.1" data-provider="openai">
+                gpt-4.1
+              </div>
+              <div
+                class="option"
+                data-value="gpt-o3-pro"
+                data-provider="openai"
+              >
+                gpt-o3-pro
+              </div>
             </div>
           </div>
 
-          <div class="subgroup mini">
-            <div class="subgroup-title">🧠 Advanced Reasoning Minis</div>
-            <div class="option" data-value="gpt-o1-mini" data-provider="openai">
-              gpt-o1-mini
-            </div>
-            <div class="option" data-value="gpt-o2-mini" data-provider="openai">
-              gpt-o2-mini
-            </div>
-            <div class="option" data-value="gpt-o3-mini" data-provider="openai">
-              gpt-o3-mini
-            </div>
-            <div class="option" data-value="gpt-o4-mini" data-provider="openai">
-              gpt-o4-mini
-            </div>
-          </div>
+          <div class="group gemini-models">
+            <div class="group-title">🟡 Gemini Models</div>
 
-          <div class="subgroup full">
-            <div class="subgroup-title">⚡ Full Performance Models</div>
-            <div class="option" data-value="gpt-o1" data-provider="openai">
-              gpt-o1
+            <div class="subgroup gemini-2-5">
+              <div class="subgroup-title">Gemini 2.5 Series</div>
+              <div
+                class="option"
+                data-value="gemini-2.5-pro"
+                data-provider="gemini"
+              >
+                gemini-2.5-pro
+              </div>
+              <div
+                class="option"
+                data-value="gemini-2.5-flash"
+                data-provider="gemini"
+              >
+                gemini-2.5-flash
+              </div>
             </div>
-            <div class="option" data-value="gpt-o2" data-provider="openai">
-              gpt-o2
-            </div>
-            <div class="option" data-value="gpt-o3" data-provider="openai">
-              gpt-o3
-            </div>
-            <div class="option" data-value="gpt-o4" data-provider="openai">
-              gpt-o4
-            </div>
-          </div>
 
-          <div class="subgroup premium">
-            <div class="subgroup-title">✨ Premium & Multimodal</div>
-            <div class="option" data-value="gpt-4o" data-provider="openai">
-              gpt-4o
+            <div class="subgroup gemini-2-0">
+              <div class="subgroup-title">Gemini 2.0 Series</div>
+              <div
+                class="option"
+                data-value="gemini-2.0-flash"
+                data-provider="gemini"
+              >
+                gemini-2.0-flash
+              </div>
+              <div
+                class="option"
+                data-value="gemini-2.0-flash-lite"
+                data-provider="gemini"
+              >
+                gemini-2.0-flash-lite
+              </div>
             </div>
-            <div class="option" data-value="gpt-4.1" data-provider="openai">
-              gpt-4.1
-            </div>
-            <div class="option" data-value="gpt-o3-pro" data-provider="openai">
-              gpt-o3-pro
-            </div>
-          </div>
-        </div>
 
-        <div class="group gemini-models">
-          <div class="group-title">🟡 Gemini Models</div>
-
-          <div class="subgroup gemini-2-5">
-            <div class="subgroup-title">Gemini 2.5 Series</div>
-            <div
-              class="option"
-              data-value="gemini-2.5-pro"
-              data-provider="gemini"
-            >
-              gemini-2.5-pro
-            </div>
-            <div
-              class="option"
-              data-value="gemini-2.5-flash"
-              data-provider="gemini"
-            >
-              gemini-2.5-flash
-            </div>
-          </div>
-
-          <div class="subgroup gemini-2-0">
-            <div class="subgroup-title">Gemini 2.0 Series</div>
-            <div
-              class="option"
-              data-value="gemini-2.0-flash"
-              data-provider="gemini"
-            >
-              gemini-2.0-flash
-            </div>
-            <div
-              class="option"
-              data-value="gemini-2.0-flash-lite"
-              data-provider="gemini"
-            >
-              gemini-2.0-flash-lite
-            </div>
-          </div>
-
-          <div class="subgroup gemini-1-5">
-            <div class="subgroup-title">Gemini 1.5 Series</div>
-            <div
-              class="option"
-              data-value="gemini-1.5-flash"
-              data-provider="gemini"
-            >
-              gemini-1.5-flash
-            </div>
-            <div
-              class="option"
-              data-value="gemini-1.5-flash-8b"
-              data-provider="gemini"
-            >
-              gemini-1.5-flash-8b
-            </div>
-            <div
-              class="option"
-              data-value="gemini-1.5-pro"
-              data-provider="gemini"
-            >
-              gemini-1.5-pro
+            <div class="subgroup gemini-1-5">
+              <div class="subgroup-title">Gemini 1.5 Series</div>
+              <div
+                class="option"
+                data-value="gemini-1.5-flash"
+                data-provider="gemini"
+              >
+                gemini-1.5-flash
+              </div>
+              <div
+                class="option"
+                data-value="gemini-1.5-flash-8b"
+                data-provider="gemini"
+              >
+                gemini-1.5-flash-8b
+              </div>
+              <div
+                class="option"
+                data-value="gemini-1.5-pro"
+                data-provider="gemini"
+              >
+                gemini-1.5-pro
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <button id="generateBtn">🚀 Generate PR Description</button>
+    <!-- Generate Section -->
+    <div class="generate-section" id="generateSection">
+      <div class="section-header">
+        <span>🚀</span>
+        <span>Generate PR Description</span>
+      </div>
+      <div class="section-description">
+        Click the button below to generate a comprehensive PR description using
+        AI
+      </div>
+      <button id="generateBtn">🚀 Generate PR Description</button>
+    </div>
 
     <div id="status"></div>
 
