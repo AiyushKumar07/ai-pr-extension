@@ -269,6 +269,10 @@ window.onload = () => {
       updateSelectedModelUI(selectedModel, selectedProvider);
       updateKeySectionVisibility();
       updateCustomValuesButtonText();
+
+      // Ensure generate section is visible on load
+      generateSection.style.display = 'block';
+
       console.log(
         'Selected model set to:',
         selectedModel,
@@ -424,8 +428,9 @@ saveKeyBtn.addEventListener('click', () => {
 
   chrome.storage.local.set(storageData, () => {
     apiSection.style.display = 'none';
+    generateSection.style.display = 'block';
     generateBtn.style.display = 'block';
-    changeKeyBtn.innerHTML = '🔑 Change API Keys';
+    changeKeyBtn.innerHTML = '�� Change API Keys';
 
     openaiKeyInput.value = openaiKey ? getMaskedKey(openaiKey) : '';
     geminiKeyInput.value = geminiKey ? getMaskedKey(geminiKey) : '';
