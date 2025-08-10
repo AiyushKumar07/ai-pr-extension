@@ -249,28 +249,9 @@
         border-color: var(--text);
       }
 
-      .input-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
-      }
-
-      .input-wrapper input {
-        flex-grow: 1;
-        margin-bottom: 0;
-      }
-
-      .input-wrapper button {
-        width: auto;
-        padding: 12px;
-        margin-bottom: 0;
-        min-width: 44px;
-      }
-
       .key-section {
         margin-bottom: 16px;
-        padding: 12px;
+        padding: 16px;
         border: 1px solid var(--border-color);
         border-radius: 8px;
         background: var(--input-bg);
@@ -278,10 +259,14 @@
       }
 
       .key-section h5 {
-        margin: 0 0 8px 0;
+        margin: 0 0 12px 0;
         font-size: 14px;
         font-weight: 600;
         color: var(--accent-color);
+      }
+
+      .key-section input {
+        margin-bottom: 12px;
       }
 
       .key-section.hidden {
@@ -447,76 +432,88 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-bottom: 16px;
-        padding: 16px;
+        padding: 20px;
         border: 2px solid var(--border-color);
         border-radius: 12px;
-        background: var(--input-bg);
+        background: var(--section-bg);
+        position: relative;
+        margin-bottom: 24px;
+      }
+
+      .custom-value-item .key-header {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--accent-color);
+        padding: 8px 16px;
+        cursor: text;
+        border: 2px solid var(--accent-color);
+        border-radius: 8px 8px 0 0;
         transition: all 0.2s ease;
-        width: 100%;
+        min-height: 24px;
+        background: transparent;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        position: relative;
+        margin-bottom: 0;
+        text-align: center;
+        max-width: 100%;
         box-sizing: border-box;
+        white-space: pre-line;
+        line-height: 1.4;
       }
 
-      .custom-value-item:hover {
+      .custom-value-item .key-header:focus {
+        outline: none;
+        background: var(--input-bg);
+        color: var(--accent-color);
         border-color: var(--accent-color);
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
-        transform: translateY(-1px);
       }
 
-      .custom-value-item .input-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
-        width: 100%;
+      .custom-value-item .key-header:hover {
+        background: var(--input-bg);
+        color: var(--accent-color);
+        border-color: var(--accent-color);
+      }
+
+      .custom-value-item .value-label {
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 4px;
       }
 
       .custom-value-item input {
-        flex: 1;
-        margin-bottom: 0;
-        padding: 12px 14px;
-        font-size: 14px;
+        width: 100%;
+        padding: 12px;
         border: 2px solid var(--border-color);
         border-radius: 8px;
-        min-height: 44px;
+        background: var(--input-bg);
+        color: var(--text);
+        font-size: 14px;
+        box-sizing: border-box;
+        margin-bottom: 16px;
       }
 
       .custom-value-item input:focus {
         outline: none;
         border-color: var(--accent-color);
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-      }
-
-      .custom-value-item input:placeholder-shown {
-        border-color: var(--border-color);
-        background: var(--input-bg);
-      }
-
-      .custom-value-item input:not(:placeholder-shown) {
         background: var(--section-bg);
-        border-color: var(--accent-color);
-      }
-
-      .custom-value-item .key-input {
-        flex: 0 0 45%;
-      }
-
-      .custom-value-item .value-input {
-        flex: 0 0 55%;
       }
 
       .custom-value-item .remove-btn {
         background: var(--error-color);
         color: white;
         border: none;
+        padding: 10px 16px;
         border-radius: 8px;
-        padding: 10px 20px;
-        font-size: 13px;
         cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
         transition: all 0.2s ease;
-        width: 100%;
-        box-sizing: border-box;
-        font-weight: 600;
       }
 
       .custom-value-item .remove-btn:hover {
@@ -611,13 +608,11 @@
         <div class="key-header">
           <h5>🔵 OpenAI API Key</h5>
         </div>
-        <div class="input-wrapper">
-          <input
-            id="openaiKey"
-            type="password"
-            placeholder="Enter OpenAI API Key"
-          />
-        </div>
+        <input
+          id="openaiKey"
+          type="password"
+          placeholder="Enter OpenAI API Key"
+        />
         <div class="button-row">
           <button class="view-btn" id="openaiEyeBtn">👁️ View Key</button>
           <button class="delete-btn" id="deleteOpenaiBtn">🗑️ Delete Key</button>
@@ -628,13 +623,11 @@
         <div class="key-header">
           <h5>🟡 Gemini API Key</h5>
         </div>
-        <div class="input-wrapper">
-          <input
-            id="geminiKey"
-            type="password"
-            placeholder="Enter Gemini API Key"
-          />
-        </div>
+        <input
+          id="geminiKey"
+          type="password"
+          placeholder="Enter Gemini API Key"
+        />
         <div class="button-row">
           <button class="view-btn" id="geminiEyeBtn">👁️ View Key</button>
           <button class="delete-btn" id="deleteGeminiBtn">🗑️ Delete Key</button>
