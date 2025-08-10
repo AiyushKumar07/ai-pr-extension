@@ -501,7 +501,7 @@ saveKeyBtn.addEventListener('click', () => {
     apiSection.style.display = 'none';
     generateSection.style.display = 'block';
     generateBtn.style.display = 'block';
-    changeKeyBtn.innerHTML = '�� Change API Keys';
+    changeKeyBtn.innerHTML = '🔑 Change API Keys';
 
     openaiKeyInput.value = openaiKey ? getMaskedKey(openaiKey) : '';
     geminiKeyInput.value = geminiKey ? getMaskedKey(geminiKey) : '';
