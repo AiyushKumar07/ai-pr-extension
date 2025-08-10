@@ -167,8 +167,8 @@ Then the PR description using the following markdown structure:
 **Purpose** : Briefly describe the purpose of the PR.
 **Key Files Changed** : List the key files changed in the PR with what was changed.
 **Summary of Changes** : Bullet point summary of changes (e.g., updated APIs, refactored services, added endpoints, etc.)
-**Notes** : Any additional notes or context that would be helpful for the reviewer.
 ${customValuesContext}
+**Notes** : Any additional notes or context that would be helpful for the reviewer.
 
 Built-in Optional Sections:
 **Approach** : Explain the approach, logic, or architectural decisions.
