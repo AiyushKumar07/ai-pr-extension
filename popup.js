@@ -81,43 +81,112 @@ function createCustomValueItem(key = '', value = '') {
   const item = document.createElement('div');
   item.className = 'custom-value-item';
 
-  // Create input row wrapper
-  const inputRow = document.createElement('div');
-  inputRow.className = 'input-row';
+  // Create contenteditable key header
+  const keyHeader = document.createElement('div');
+  keyHeader.contentEditable = true;
+  keyHeader.textContent = key || 'Enter key name here';
+  keyHeader.className = 'key-header';
 
-  const keyInput = document.createElement('input');
-  keyInput.type = 'text';
-  keyInput.placeholder = 'Key (e.g., project_name)';
-  keyInput.className = 'key-input';
-  keyInput.value = key;
+  // Create label for value
+  const valueLabel = document.createElement('label');
+  valueLabel.textContent = 'Description of key:';
+  valueLabel.className = 'value-label';
 
+  // Create value input
   const valueInput = document.createElement('input');
   valueInput.type = 'text';
-  valueInput.placeholder = 'Value (e.g., MyProject)';
+  valueInput.placeholder = 'Enter description here';
   valueInput.className = 'value-input';
   valueInput.value = value;
+  valueInput.id = `description-${Date.now()}-${Math.random()}`;
+  valueLabel.htmlFor = valueInput.id;
 
+  // Create remove button with text and icon
   const removeBtn = document.createElement('button');
   removeBtn.className = 'remove-btn';
-  removeBtn.textContent = '🗑️';
-  removeBtn.style.display = 'flex';
+  removeBtn.innerHTML = '🗑️ Remove Custom Property';
   removeBtn.onclick = () => item.remove();
 
   // Clear validation errors when input changes
   const clearValidation = () => {
-    keyInput.style.borderColor = '';
     valueInput.style.borderColor = '';
   };
 
-  keyInput.addEventListener('input', clearValidation);
   valueInput.addEventListener('input', clearValidation);
 
-  // Add inputs to input row
-  inputRow.appendChild(keyInput);
-  inputRow.appendChild(valueInput);
+  // Update key header when it changes
+  keyHeader.addEventListener('input', () => {
+    const currentText = keyHeader.textContent;
 
-  // Add input row and remove button to item
-  item.appendChild(inputRow);
+    // If completely empty, set default text
+    if (!currentText.trim()) {
+      keyHeader.textContent = 'Enter key name here';
+      return;
+    }
+
+    // If the text contains the default text, remove it and keep only user input
+    if (currentText.includes('Enter key name here')) {
+      const userInput = currentText.replace('Enter key name here', '').trim();
+      if (userInput) {
+        // Save cursor position before replacing text
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        const cursorOffset = range.startOffset;
+
+        // Replace the text
+        keyHeader.textContent = userInput;
+
+        // Restore cursor position at the end of the text
+        const newRange = document.createRange();
+        newRange.selectNodeContents(keyHeader);
+        newRange.collapse(false); // false = collapse to end
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      } else {
+        keyHeader.textContent = 'Enter key name here';
+        return;
+      }
+    }
+
+    // Limit to 15 words max
+    const words = currentText.trim().split(/\s+/);
+    if (words.length > 15) {
+      // Take first 15 words and add line breaks every 5 words for readability
+      const limitedWords = words.slice(0, 15);
+      const lines = [];
+      for (let i = 0; i < limitedWords.length; i += 5) {
+        lines.push(limitedWords.slice(i, i + 5).join(' '));
+      }
+      keyHeader.textContent = lines.join('\n');
+    }
+  });
+
+  // Auto-remove empty items when they lose focus
+  keyHeader.addEventListener('blur', () => {
+    const key = keyHeader.textContent.trim();
+    const valueInput = item.querySelector('.value-input');
+    const value = valueInput.value.trim();
+
+    // If both key and value are empty/default, remove the item
+    if ((!key || key === 'Enter key name here') && !value) {
+      item.remove();
+    }
+  });
+
+  valueInput.addEventListener('blur', () => {
+    const key = keyHeader.textContent.trim();
+    const value = valueInput.value.trim();
+
+    // If both key and value are empty/default, remove the item
+    if ((!key || key === 'Enter key name here') && !value) {
+      item.remove();
+    }
+  });
+
+  // Add elements directly to item
+  item.appendChild(keyHeader);
+  item.appendChild(valueLabel);
+  item.appendChild(valueInput);
   item.appendChild(removeBtn);
 
   return item;
@@ -131,36 +200,38 @@ function saveCustomValues() {
   const items = customValuesList.querySelectorAll('.custom-value-item');
 
   items.forEach((item, index) => {
-    const keyInput = item.querySelector('.key-input');
+    const keyHeader = item.querySelector('.key-header');
     const valueInput = item.querySelector('.value-input');
-    const key = keyInput.value.trim();
+    const key = keyHeader.textContent.trim();
     const value = valueInput.value.trim();
 
-    if (!key && !value) {
-      // Skip completely empty rows
-      return;
+    // Check if key is empty or just the default text
+    if (!key || key === 'Enter key name here') {
+      // Remove completely empty items or items with default text
+      if (!value) {
+        item.remove(); // Remove the empty item from UI
+        return;
+      } else {
+        // Has value but no valid key
+        errors.push(`Row ${index + 1}: Key is required when value is provided`);
+        keyHeader.style.borderColor = 'var(--error-color)';
+        return;
+      }
     }
 
-    // Allow blank values for user-added entries
-    if (!key && value) {
-      errors.push(`Row ${index + 1}: Key is required when value is provided`);
-      keyInput.style.borderColor = 'var(--error-color)';
-      return;
-    }
-
+    // Allow blank values for valid keys
     if (key && !value) {
-      // Allow blank values - this is valid
-      // Just add the key with empty value
+      // Valid key with empty value - this is allowed
     }
 
     if (tempCustomValues.some(existing => existing.key === key)) {
       errors.push(`Duplicate key: "${key}"`);
-      keyInput.style.borderColor = 'var(--error-color)';
+      keyHeader.style.borderColor = 'var(--error-color)';
       return;
     }
 
     // Reset border color if valid
-    keyInput.style.borderColor = '';
+    keyHeader.style.borderColor = '';
     valueInput.style.borderColor = '';
 
     // Add the key-value pair (value can be empty)
@@ -430,7 +501,7 @@ saveKeyBtn.addEventListener('click', () => {
     apiSection.style.display = 'none';
     generateSection.style.display = 'block';
     generateBtn.style.display = 'block';
-    changeKeyBtn.innerHTML = '�� Change API Keys';
+    changeKeyBtn.innerHTML = '🔑 Change API Keys';
 
     openaiKeyInput.value = openaiKey ? getMaskedKey(openaiKey) : '';
     geminiKeyInput.value = geminiKey ? getMaskedKey(geminiKey) : '';
