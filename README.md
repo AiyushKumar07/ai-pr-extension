@@ -2,8 +2,8 @@
 
 > A powerful browser extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models or Google's Gemini models by analyzing your GitHub diff.
 
-[![Web Store](https://img.shields.io/badge/Web%20Store-Install-blue?logo=google-chrome)](https://webstore.example.com/ai-pr-generator) [![SOON]]
-[![Version](https://img.shields.io/badge/version-1.5-brightgreen.svg)](https://github.com/yourusername/ai-pr-extension)
+[![Web Store](https://img.shields.io/badge/Web%20Store-Install-blue?logo=google-chrome)](https://chromewebstore.google.com/detail/github-pr-scribe-ai/ajnplipmiafledgelgdajdfepjamafml/reviews)
+[![Version](https://img.shields.io/badge/version-1.5-brightgreen.svg)](https://github.com/AiyushKumar07/ai-pr-extension)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## ✨ Features
@@ -16,6 +16,7 @@
 - **⚡ Fast**: Works instantly on GitHub compare pages
 - **📱 Responsive**: Clean, modern interface that works on any screen size
 - **🔄 Provider Switching**: Easily switch between OpenAI and Gemini models
+- **⚙️ Custom Prompt Values**: Add project-specific context and personalization to your PR prompts
 
 ## 🚀 Quick Start
 
@@ -83,6 +84,37 @@ The extension provides comprehensive API key management:
 - Keys are masked by default for privacy
 - Confirmation dialogs prevent accidental key deletion
 - No keys are ever transmitted to external servers except for API calls
+
+## ⚙️ Custom Prompt Values
+
+The extension allows you to add custom key-value pairs that will be included in your PR generation prompts for better context and personalization.
+
+### **Adding Custom Values**
+
+1. Click "⚙️ Custom Prompt Values" to open the custom values panel
+2. Click "➕ Add Value" to add a new key-value pair
+3. Enter a descriptive key (e.g., `project_name`, `team_name`, `coding_standards`)
+4. Enter the corresponding value (e.g., `MyProject`, `Development Team`, `ESLint + Prettier`)
+5. Click "💾 Save Values" to store your custom values
+
+### **Example Custom Values**
+
+- **project_name**: `MyProject` - Helps AI understand your project context
+- **team_name**: `Development Team` - Provides team-specific context
+- **coding_standards**: `ESLint + Prettier` - Guides AI on coding conventions
+- **deployment_env**: `Production` - Helps with deployment-related PRs
+- **tech_stack**: `React + Node.js` - Provides technology context
+
+### **How It Works**
+
+When you generate a PR description, the extension automatically includes your custom values in the prompt sent to the AI. This helps the AI generate more relevant and contextual PR descriptions that align with your project's specific requirements and standards.
+
+### **Managing Custom Values**
+
+- **Edit**: Click on any input field to modify existing values
+- **Remove**: Click the 🗑️ button to delete individual values
+- **Validation**: The extension validates that all keys are unique and both key and value are provided
+- **Persistence**: Custom values are stored locally and persist between browser sessions
 
 ## 📖 How to Use
 

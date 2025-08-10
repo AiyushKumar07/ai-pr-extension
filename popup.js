@@ -8,6 +8,7 @@ const geminiEyeBtn = document.getElementById('geminiEyeBtn');
 const deleteOpenaiBtn = document.getElementById('deleteOpenaiBtn');
 const deleteGeminiBtn = document.getElementById('deleteGeminiBtn');
 const generateBtn = document.getElementById('generateBtn');
+const generateSection = document.getElementById('generateSection');
 const statusEl = document.getElementById('status');
 const themeToggle = document.getElementById('themeToggle');
 const modelDropdownBtn = document.getElementById('modelDropdownBtn');
@@ -15,6 +16,11 @@ const modelList = document.getElementById('modelList');
 const dropdown = document.querySelector('.dropdown');
 const openaiKeySection = document.getElementById('openaiKeySection');
 const geminiKeySection = document.getElementById('geminiKeySection');
+const customValuesBtn = document.getElementById('customValuesBtn');
+const customValuesSection = document.getElementById('customValuesSection');
+const addCustomValueBtn = document.getElementById('addCustomValueBtn');
+const saveCustomValuesBtn = document.getElementById('saveCustomValuesBtn');
+const customValuesList = document.getElementById('customValuesList');
 
 let openaiKey = '';
 let geminiKey = '';
@@ -24,19 +30,32 @@ let showOpenaiKey = false;
 let showGeminiKey = false;
 let tempOpenaiKey = '';
 let tempGeminiKey = '';
+let customValues = [];
+let tempCustomValues = [];
+let statusTimeout = null;
+let isGenerating = false; // Flag to prevent multiple generations
 
 function getMaskedKey(key) {
   return '•'.repeat(key.length);
 }
 
 function updateSelectedModelUI(model, provider) {
-  modelDropdownBtn.textContent = model;
+  modelDropdownBtn.textContent = `🤖 ${model}`;
   document.querySelectorAll('.option').forEach(opt => {
     opt.classList.remove('selected');
     if (opt.dataset.value === model && opt.dataset.provider === provider) {
       opt.classList.add('selected');
     }
   });
+}
+
+function updateCustomValuesButtonText() {
+  const count = customValues.length;
+  if (count === 0) {
+    customValuesBtn.innerHTML = '⚙️ Custom Prompt Values';
+  } else {
+    customValuesBtn.innerHTML = `⚙️ Custom Values (${count})`;
+  }
 }
 
 function updateKeySectionVisibility() {
@@ -56,6 +75,104 @@ function updateKeySectionVisibility() {
   openaiKeySection.style.borderColor = 'var(--border-color)';
   geminiKeySection.style.opacity = '1';
   geminiKeySection.style.borderColor = 'var(--border-color)';
+}
+
+function createCustomValueItem(key = '', value = '') {
+  const item = document.createElement('div');
+  item.className = 'custom-value-item';
+
+  // Create input row wrapper
+  const inputRow = document.createElement('div');
+  inputRow.className = 'input-row';
+
+  const keyInput = document.createElement('input');
+  keyInput.type = 'text';
+  keyInput.placeholder = 'Key (e.g., project_name)';
+  keyInput.className = 'key-input';
+  keyInput.value = key;
+
+  const valueInput = document.createElement('input');
+  valueInput.type = 'text';
+  valueInput.placeholder = 'Value (e.g., MyProject)';
+  valueInput.className = 'value-input';
+  valueInput.value = value;
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'remove-btn';
+  removeBtn.textContent = '🗑️';
+  removeBtn.style.display = 'flex';
+  removeBtn.onclick = () => item.remove();
+
+  // Clear validation errors when input changes
+  const clearValidation = () => {
+    keyInput.style.borderColor = '';
+    valueInput.style.borderColor = '';
+  };
+
+  keyInput.addEventListener('input', clearValidation);
+  valueInput.addEventListener('input', clearValidation);
+
+  // Add inputs to input row
+  inputRow.appendChild(keyInput);
+  inputRow.appendChild(valueInput);
+
+  // Add input row and remove button to item
+  item.appendChild(inputRow);
+  item.appendChild(removeBtn);
+
+  return item;
+}
+
+function saveCustomValues() {
+  tempCustomValues = [];
+  const errors = [];
+
+  // Get all custom value items from the DOM
+  const items = customValuesList.querySelectorAll('.custom-value-item');
+
+  items.forEach((item, index) => {
+    const keyInput = item.querySelector('.key-input');
+    const valueInput = item.querySelector('.value-input');
+    const key = keyInput.value.trim();
+    const value = valueInput.value.trim();
+
+    if (!key && !value) {
+      // Skip completely empty rows
+      return;
+    }
+
+    // Allow blank values for user-added entries
+    if (!key && value) {
+      errors.push(`Row ${index + 1}: Key is required when value is provided`);
+      keyInput.style.borderColor = 'var(--error-color)';
+      return;
+    }
+
+    if (key && !value) {
+      // Allow blank values - this is valid
+      // Just add the key with empty value
+    }
+
+    if (tempCustomValues.some(existing => existing.key === key)) {
+      errors.push(`Duplicate key: "${key}"`);
+      keyInput.style.borderColor = 'var(--error-color)';
+      return;
+    }
+
+    // Reset border color if valid
+    keyInput.style.borderColor = '';
+    valueInput.style.borderColor = '';
+
+    // Add the key-value pair (value can be empty)
+    tempCustomValues.push({ key, value: value || '' });
+  });
+
+  if (errors.length > 0) {
+    setStatus(`Validation errors: ${errors.join(', ')}`, 'red');
+    return null;
+  }
+
+  return tempCustomValues;
 }
 
 function getCurrentKey() {
@@ -101,7 +218,14 @@ modelList.addEventListener('click', e => {
 window.onload = () => {
   console.log('Popup loaded.');
   chrome.storage.local.get(
-    ['openaiKey', 'geminiKey', 'selectedModel', 'selectedProvider', 'theme'],
+    [
+      'openaiKey',
+      'geminiKey',
+      'selectedModel',
+      'selectedProvider',
+      'theme',
+      'customValues',
+    ],
     data => {
       if (data.openaiKey) {
         openaiKey = data.openaiKey;
@@ -117,6 +241,15 @@ window.onload = () => {
       } else {
         geminiKey = '';
         geminiKeyInput.value = '';
+      }
+
+      if (data.customValues) {
+        customValues = data.customValues;
+        tempCustomValues = [...customValues];
+      } else {
+        // Start with empty custom values
+        customValues = [];
+        tempCustomValues = [];
       }
 
       console.log('Stored data loaded:', data);
@@ -135,6 +268,7 @@ window.onload = () => {
 
       updateSelectedModelUI(selectedModel, selectedProvider);
       updateKeySectionVisibility();
+      updateCustomValuesButtonText();
       console.log(
         'Selected model set to:',
         selectedModel,
@@ -157,7 +291,7 @@ changeKeyBtn.addEventListener('click', () => {
 
   if (!isPanelOpen) {
     apiSection.style.display = 'block';
-    generateBtn.style.display = 'none';
+    generateSection.style.display = 'none';
     changeKeyBtn.innerHTML = '🔼 Close Key Panel';
     updateKeySectionVisibility();
 
@@ -169,7 +303,7 @@ changeKeyBtn.addEventListener('click', () => {
     geminiKeyInput.value = tempGeminiKey || geminiKey || '';
   } else {
     apiSection.style.display = 'none';
-    generateBtn.style.display = 'block';
+    generateSection.style.display = 'block';
     changeKeyBtn.innerHTML = '🔑 Change API Keys';
   }
 
@@ -305,12 +439,84 @@ saveKeyBtn.addEventListener('click', () => {
   });
 });
 
+// Custom values functionality
+customValuesBtn.addEventListener('click', () => {
+  const isPanelOpen = customValuesSection.style.display === 'block';
+
+  if (!isPanelOpen) {
+    customValuesSection.style.display = 'block';
+    generateSection.style.display = 'none';
+    customValuesBtn.innerHTML = '🔼 Close Custom Values';
+
+    // Initialize temp values with current values
+    tempCustomValues = [...customValues];
+
+    // Populate the DOM with existing custom values
+    customValuesList.innerHTML = '';
+    customValues.forEach(cv => {
+      const item = createCustomValueItem(cv.key, cv.value);
+      customValuesList.appendChild(item);
+    });
+  } else {
+    customValuesSection.style.display = 'none';
+    generateSection.style.display = 'block';
+    updateCustomValuesButtonText();
+  }
+
+  setStatus('');
+});
+
+addCustomValueBtn.addEventListener('click', () => {
+  const item = createCustomValueItem();
+  customValuesList.appendChild(item);
+});
+
+saveCustomValuesBtn.addEventListener('click', () => {
+  const newCustomValues = saveCustomValues();
+
+  if (newCustomValues === null) {
+    // Validation failed
+    return;
+  }
+
+  // Allow saving even with no custom values
+  if (newCustomValues.length === 0) {
+    setStatus('No custom values added', 'blue');
+  }
+
+  customValues = [...newCustomValues];
+
+  chrome.storage.local.set({ customValues: customValues }, () => {
+    customValuesSection.style.display = 'none';
+    generateSection.style.display = 'block';
+    updateCustomValuesButtonText();
+
+    setStatus('Custom values saved!', 'green');
+    console.log('Custom values saved:', customValues);
+  });
+});
+
 generateBtn.addEventListener('click', () => {
   console.log('Generate button clicked.');
 
   if (!validateCurrentKey()) {
     return;
   }
+
+  // Prevent multiple generations
+  if (isGenerating) {
+    console.log('Generation already in progress, ignoring click.');
+    return;
+  }
+
+  // Set generating flag
+  isGenerating = true;
+
+  // Disable the button to prevent repetitive clicks
+  generateBtn.disabled = true;
+  generateBtn.textContent = '⏳ Generating...';
+  generateBtn.style.opacity = '0.6';
+  generateBtn.style.cursor = 'not-allowed';
 
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     setStatus('⏳ Sending request...');
@@ -323,24 +529,87 @@ generateBtn.addEventListener('click', () => {
         files: ['content.js'],
       },
       () => {
-        // Dispatch custom event once content script is loaded
-        chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func: (key, model, provider) => {
-            window.dispatchEvent(
-              new CustomEvent('ai-pr-gen', {
-                detail: { apiKey: key, model: model, provider: provider },
-              })
-            );
+        // Check if content script is already loaded to prevent duplicate listeners
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tab.id },
+            func: () => {
+              // Check if we already have a listener for this request
+              if (window.isProcessingPRRequest) {
+                console.log(
+                  'Content script already processing a request, skipping injection.'
+                );
+                return false;
+              }
+              return true;
+            },
           },
-          args: [getCurrentKey(), selectedModel, selectedProvider],
-        });
+          results => {
+            if (
+              chrome.runtime.lastError ||
+              !results ||
+              !results[0] ||
+              !results[0].result
+            ) {
+              console.log('Content script already busy, skipping request.');
+              enableGenerateButton();
+              isGenerating = false;
+              return;
+            }
 
-        // Start 10s timeout to auto-reload if stuck
-        statusTimeout = setTimeout(() => {
-          console.warn('No response from content script. Reloading tab.');
-          chrome.tabs.reload(tab.id);
-        }, 10000);
+            // Prepare custom values - only use user-provided values
+            let finalCustomValues = [];
+
+            // Filter out completely empty entries
+            if (customValues && customValues.length > 0) {
+              console.log('Original custom values:', customValues);
+              finalCustomValues = customValues.filter(
+                cv => cv.key.trim() && cv.value.trim()
+              );
+              console.log('Filtered custom values:', finalCustomValues);
+            } else {
+              console.log('No custom values found in storage');
+            }
+
+            // Dispatch custom event once content script is loaded
+            chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              func: (key, model, provider, customVals) => {
+                console.log('Content script received:', {
+                  key: key ? '***' + key.slice(-4) : 'empty',
+                  model,
+                  provider,
+                  customVals,
+                });
+                window.dispatchEvent(
+                  new CustomEvent('ai-pr-gen', {
+                    detail: {
+                      apiKey: key,
+                      model: model,
+                      provider: provider,
+                      customValues: customVals,
+                    },
+                  })
+                );
+              },
+              args: [
+                getCurrentKey(),
+                selectedModel,
+                selectedProvider,
+                finalCustomValues,
+              ],
+            });
+
+            // Start 10s timeout to auto-reload if stuck
+            statusTimeout = setTimeout(() => {
+              console.warn('No response from content script. Reloading tab.');
+              chrome.tabs.reload(tab.id);
+              // Re-enable button on timeout
+              enableGenerateButton();
+              isGenerating = false; // Reset the flag on timeout
+            }, 10000);
+          }
+        );
       }
     );
   });
@@ -359,10 +628,23 @@ chrome.runtime.onMessage.addListener(msg => {
     clearTimeout(statusTimeout);
     console.log('Status message received:', msg.message);
     setStatus(msg.message.text, msg.message.color);
+
+    // Re-enable button on success or error
+    if (msg.message.type === 'success' || msg.message.type === 'error') {
+      enableGenerateButton();
+    }
   }
 });
 
 function setStatus(text, color) {
   statusEl.textContent = text;
   statusEl.style.color = color || 'var(--text)';
+}
+
+function enableGenerateButton() {
+  generateBtn.disabled = false;
+  generateBtn.textContent = '🤖 Generate PR Description';
+  generateBtn.style.opacity = '1';
+  generateBtn.style.cursor = 'pointer';
+  isGenerating = false; // Reset the flag after generation
 }
