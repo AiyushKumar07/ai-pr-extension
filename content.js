@@ -22,6 +22,10 @@ function simulateInput(el, value) {
 }
 
 async function makeOpenAIRequest(apiKey, model, prompt) {
+  // Ensure the prompt is properly encoded
+  const encodedPrompt = prompt.replace(/[^\x00-\x7F]/g, '');
+  console.log('Encoded Prompt:', encodedPrompt);
+
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -30,7 +34,7 @@ async function makeOpenAIRequest(apiKey, model, prompt) {
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: 'user', content: encodedPrompt }],
       temperature: 0.3,
     }),
   });
@@ -75,6 +79,9 @@ async function makeGeminiRequest(apiKey, model, prompt) {
 
   const apiModel = modelMap[model] || model;
 
+  // Ensure the prompt is properly encoded
+  const encodedPrompt = prompt.replace(/[^\x00-\x7F]/g, '');
+
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent?key=${apiKey}`,
     {
@@ -87,7 +94,7 @@ async function makeGeminiRequest(apiKey, model, prompt) {
           {
             parts: [
               {
-                text: prompt,
+                text: encodedPrompt,
               },
             ],
           },
@@ -119,31 +126,56 @@ async function makeGeminiRequest(apiKey, model, prompt) {
 
 window.addEventListener('ai-pr-gen', async e => {
   console.log('Event "ai-pr-gen" received in content script.');
-  const { apiKey, model, provider } = e.detail;
+  const { apiKey, model, provider, customValues } = e.detail;
+
+  // Prevent multiple executions of the same request
+  if (window.isProcessingPRRequest) {
+    console.log('PR request already in progress, ignoring duplicate event.');
+    return;
+  }
+
+  // Set flag to prevent duplicate processing
+  window.isProcessingPRRequest = true;
 
   try {
     const { prTitleInput, prDescInput } = await waitForPRForm();
-    postStatus('📖 Reading diff...');
+    postStatus('📖 Reading diff...', 'blue', 'info');
     const diff = parseDiff();
 
     console.log('Extracted Diff:', diff);
+    console.log('Custom Values:', customValues);
+
+    // Build custom values context if any exist
+    let customValuesContext = '';
+    if (customValues && customValues.length > 0) {
+      customValues.forEach(({ key, value }) => {
+        customValuesContext += `**${key}**: ${value}\n`;
+      });
+      console.log('Custom Values Context:', customValuesContext);
+      console.log('Custom Values Context Length:', customValuesContext.length);
+    } else {
+      console.log('No custom values found or customValues is empty');
+    }
 
     const prompt = `
 Given the following GitHub PR diff, generate a concise Pull Request title and a structured markdown description using the format below.
+
 Return only:
 A PR title prefixed with conventional commit types (feat, fix, chore, refactor, etc.)
 Two line breaks
 Then the PR description using the following markdown structure:
-**_Purpose_** : Briefly describe the purpose of the PR.
-**_Key Files Changed_** : List the key files changed in the PR with what was changed.
-**_Summary of Changes_** : Bullet point summary of changes (e.g., updated APIs, refactored services, added endpoints, etc.)
-**_Notes_** : Any additional notes or context that would be helpful for the reviewer.
-**_Approach (Optional)_** : Explain the approach or logic or architectural decisions.
-**_Bug Fixes (Optional)_** : If the PR is a bug fix, list the issue fixes.
-**_Refactoring (Optional)_** : If the PR is a refactoring, list the structural/code improvements.
-**_Chores (Optional)_** : If the PR is a chore, list the tooling, dependency updates, clean-up.
-**_Testing (Optional)_** : If the PR is a test, list the test cases added/updated.
+**Purpose** : Briefly describe the purpose of the PR.
+**Key Files Changed** : List the key files changed in the PR with what was changed.
+**Summary of Changes** : Bullet point summary of changes (e.g., updated APIs, refactored services, added endpoints, etc.)
+**Notes** : Any additional notes or context that would be helpful for the reviewer.
+${customValuesContext}
 
+Built-in Optional Sections:
+**Approach** : Explain the approach, logic, or architectural decisions.
+**Bug Fixes** : If the PR is a bug fix, list the issue fixes.
+**Refactoring** : If the PR is a refactoring, list the structural/code improvements.
+**Chores** : If the PR is a chore, list the tooling, dependency updates, or clean-up.
+**Testing** : If the PR is a test, list the test cases added/updated.
 
 Only return the title first, then two line breaks, then the markdown content.
 
@@ -154,7 +186,7 @@ ${diff}
 
     try {
       const providerName = provider === 'openai' ? 'OpenAI' : 'Gemini';
-      postStatus(`🤖 Sending to ${providerName}...`);
+      postStatus(`🤖 Sending to ${providerName}...`, 'blue', 'info');
       console.log(`Sending request to ${providerName} API...`);
 
       let content;
@@ -177,23 +209,37 @@ ${diff}
       const [title, ...bodyLines] = content.split('\n');
       simulateInput(prTitleInput, title.trim());
       simulateInput(prDescInput, bodyLines.join('\n').trim());
-      postStatus(`✅ PR details added via ${providerName}!`, 'green');
+      postStatus(
+        `✅ PR details added via ${providerName}!`,
+        'green',
+        'success'
+      );
       console.log(
         `Successfully populated PR title and description using ${providerName}.`
       );
+
+      // Reset processing flag
+      window.isProcessingPRRequest = false;
     } catch (err) {
       postStatus(
         `❌ ${provider === 'openai' ? 'OpenAI' : 'Gemini'} Error: ` +
           err.message,
-        'red'
+        'red',
+        'error'
       );
       console.error(
         `${provider === 'openai' ? 'OpenAI' : 'Gemini'} error:`,
         err
       );
+
+      // Reset processing flag
+      window.isProcessingPRRequest = false;
     }
   } catch (err) {
-    postStatus('🚫 ' + err.message, 'red');
+    postStatus('🚫 ' + err.message, 'red', 'error');
+
+    // Reset processing flag
+    window.isProcessingPRRequest = false;
     return;
   }
 });
@@ -275,12 +321,12 @@ function parseDiff() {
   return diffData;
 }
 
-function postStatus(text, color = 'white') {
+function postStatus(text, color = 'white', type = 'info') {
   try {
     chrome.runtime.sendMessage(
       {
         type: 'ai-pr-gen-status',
-        message: { text, color },
+        message: { text, color, type },
       },
       () => {
         const err = chrome.runtime.lastError?.message;
