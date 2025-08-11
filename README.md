@@ -3,7 +3,7 @@
 > A powerful browser extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models or Google's Gemini models by analyzing your GitHub diff.
 
 [![Web Store](https://img.shields.io/badge/Web%20Store-Install-blue?logo=google-chrome)](https://chromewebstore.google.com/detail/github-pr-scribe-ai/ajnplipmiafledgelgdajdfepjamafml/reviews)
-[![Version](https://img.shields.io/badge/version-1.5-brightgreen.svg)](https://github.com/AiyushKumar07/ai-pr-extension)
+[![Version](https://img.shields.io/badge/version-1.6.0-brightgreen.svg)](https://github.com/AiyushKumar07/ai-pr-extension)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## ✨ Features
@@ -11,12 +11,16 @@
 - **🎯 Smart PR Generation**: Automatically analyzes your GitHub diff and generates meaningful PR titles and descriptions
 - **🤖 Multiple AI Providers**: Support for both OpenAI GPT models and Google Gemini models
 - **📝 Structured Output**: Generates PRs with conventional commit types and organized markdown descriptions
-- **🎨 Dark/Light Theme**: Beautiful UI with theme switching capability
+- **🎨 Modern Design System**: Beautiful UI with Outfit & Sora fonts, centered layouts, and professional styling
+- **🌙 Dark/Light Theme**: Seamless theme switching with optimized color schemes for both modes
 - **🔒 Secure**: Your API keys are stored locally and never shared
 - **⚡ Fast**: Works instantly on GitHub compare pages
 - **📱 Responsive**: Clean, modern interface that works on any screen size
 - **🔄 Provider Switching**: Easily switch between OpenAI and Gemini models
 - **⚙️ Custom Prompt Values**: Add project-specific context and personalization to your PR prompts
+- **✨ Enhanced UX**: Prominent highlighting for important information and improved visual hierarchy
+- **🔑 Advanced Key Management**: Individual delete buttons, view toggles, and secure storage
+- **📋 Built-in Sections**: Automatic inclusion of relevant PR sections based on content analysis
 
 ## 🚀 Quick Start
 
@@ -29,15 +33,13 @@
 
 2. **Manual Installation** (Development)
    ```bash
-   git clone https://github.com/yourusername/ai-pr-extension.git
+   git clone https://github.com/AiyushKumar07/ai-pr-extension.git
    cd ai-pr-extension
    npm install
-   click on extensions
-   manage extensions
-   enable developer mode
-   load unpacked
-   select folder containing the extension
-   DONE !
+   # Open browser extensions page
+   # Enable developer mode
+   # Click "Load unpacked"
+   # Select the extension folder
    ```
 
 ### Setup
@@ -58,22 +60,22 @@
    - Click the extension icon in your browser toolbar
    - Click "🔑 Change API Keys"
    - Enter your OpenAI and/or Gemini API keys
-   - Click "Close & Save Keys"
+   - Click "💾 Save & Close"
 
 ## 🔑 Key Management
 
-The extension provides comprehensive API key management:
+The extension provides comprehensive API key management with enhanced security features:
 
 ### **Adding Keys**
 
 - Click "🔑 Change API Keys" to open the key management panel
 - Enter your API keys in the respective input fields
 - Use the eye button (👁️) to toggle visibility of your keys
-- Click "Close & Save Keys" to save your changes
+- Click "💾 Save & Close" to save your changes
 
 ### **Deleting Keys**
 
-- Click the "🗑️ Delete" button next to any key to remove it
+- Click the "🗑️ Delete Key" button next to any key to remove it
 - A confirmation dialog will appear to prevent accidental deletion
 - Deleted keys are immediately removed from storage and the UI
 - You can always add keys back later
@@ -84,6 +86,7 @@ The extension provides comprehensive API key management:
 - Keys are masked by default for privacy
 - Confirmation dialogs prevent accidental key deletion
 - No keys are ever transmitted to external servers except for API calls
+- Individual delete buttons for each provider
 
 ## ⚙️ Custom Prompt Values
 
@@ -92,10 +95,10 @@ The extension allows you to add custom key-value pairs that will be included in 
 ### **Adding Custom Values**
 
 1. Click "⚙️ Custom Prompt Values" to open the custom values panel
-2. Click "➕ Add Value" to add a new key-value pair
+2. Click "➕ Add Custom Property" to add a new key-value pair
 3. Enter a descriptive key (e.g., `project_name`, `team_name`, `coding_standards`)
 4. Enter the corresponding value (e.g., `MyProject`, `Development Team`, `ESLint + Prettier`)
-5. Click "💾 Save Values" to store your custom values
+5. Click "💾 Save Custom Properties" to store your custom values
 
 ### **Example Custom Values**
 
@@ -115,6 +118,17 @@ When you generate a PR description, the extension automatically includes your cu
 - **Remove**: Click the 🗑️ button to delete individual values
 - **Validation**: The extension validates that all keys are unique and both key and value are provided
 - **Persistence**: Custom values are stored locally and persist between browser sessions
+- **Auto-cleanup**: Empty or invalid entries are automatically removed
+
+### **Built-in Optional Sections**
+
+The extension automatically includes relevant sections when your PR contains specific content:
+
+- **Approach**: Explain the approach, logic, or architectural decisions
+- **Bug Fixes**: List the issue fixes if it's a bug fix
+- **Refactoring**: List structural/code improvements if refactoring
+- **Chores**: List tooling, dependency updates, or clean-up
+- **Testing**: List test cases added/updated
 
 ## 📖 How to Use
 
@@ -128,7 +142,7 @@ When you generate a PR description, the extension automatically includes your cu
 2. **Generate PR Content**
    - Click the AI PR Generator extension icon
    - Select your preferred AI model and provider (OpenAI or Gemini)
-   - Click "🚀 Generate PR"
+   - Click "🚀 Generate PR Description"
    - Wait for the AI to analyze your diff and generate content
 
 3. **Review and Submit**
@@ -180,7 +194,7 @@ When you generate a PR description, the extension automatically includes your cu
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/ai-pr-extension.git
+   git clone https://github.com/AiyushKumar07/ai-pr-extension.git
    cd ai-pr-extension
    ```
 
@@ -213,12 +227,12 @@ When you generate a PR description, the extension automatically includes your cu
 
 ```
 ai-pr-extension/
-├── manifest.json          # Extension manifest
-├── popup.html            # Extension popup UI
-├── popup.js              # Popup functionality
+├── manifest.json          # Extension manifest (v1.6.0)
+├── popup.html            # Extension popup UI with modern design
+├── popup.js              # Popup functionality and custom values management
 ├── content.js            # Content script for GitHub integration
 ├── background.js         # Service worker
-├── icons/                # Extension icons
+├── icons/                # Extension icons (16x16 to 512x512)
 │   ├── icon_16x16.png
 │   ├── icon_32x32.png
 │   ├── icon_48x48.png
@@ -299,6 +313,34 @@ const response = await fetch(
 );
 ```
 
+#### Custom Values Management
+
+The extension provides a robust system for managing custom prompt properties:
+
+```javascript
+// Example: Creating custom value items
+function createCustomValueItem(key = '', value = '') {
+  const item = document.createElement('div');
+  item.className = 'custom-value-item';
+
+  // Contenteditable key header with validation
+  const keyHeader = document.createElement('div');
+  keyHeader.contentEditable = true;
+  keyHeader.textContent = key || 'Enter key name here';
+
+  // Value input with label
+  const valueInput = document.createElement('input');
+  valueInput.type = 'text';
+  valueInput.placeholder = 'Enter description here';
+
+  // Remove button
+  const removeBtn = document.createElement('button');
+  removeBtn.innerHTML = '🗑️ Remove Custom Property';
+
+  return item;
+}
+```
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -310,7 +352,6 @@ No environment variables are required. All configuration is done through the ext
 - `storage` - Store API keys and preferences locally
 - `scripting` - Inject content scripts into GitHub pages
 - `activeTab` - Access current tab for diff analysis
-- `webRequest` - Make API calls to OpenAI and Gemini
 
 ### Host Permissions
 
@@ -324,18 +365,47 @@ No environment variables are required. All configuration is done through the ext
 
 The extension supports both light and dark themes. Toggle between them using the theme button in the popup.
 
+### Typography & Design System
+
+The extension features a modern, professional design system built with:
+
+- **Outfit Font** (weights 100-900) - Primary text and UI elements
+- **Sora Font** (weights 100-800) - Headings and display text
+- **Responsive Layout** - Clean, centered section headers and organized content
+- **Visual Hierarchy** - Prominent highlighting for important information like default values
+
 ### Styling
 
-The UI uses CSS custom properties for easy theming:
+The UI uses CSS custom properties for easy theming and consistent design:
 
 ```css
 :root {
+  --font-family-primary:
+    'Outfit', 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-family-text:
+    'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-display:
+    'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --bg: #f5f5f5;
   --text: #111;
   --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --btn-text: white;
+  --accent-color: #667eea;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
 }
 ```
+
+### Enhanced UI Features
+
+- **Centered Section Headers** - All section titles are properly centered for better visual balance
+- **Prominent Defaults Highlight** - Special styling for default values that are always included
+- **Interactive Elements** - Hover effects, smooth transitions, and responsive feedback
+- **Accessibility** - High contrast ratios and clear visual hierarchy
+- **Modern Buttons** - Enhanced button styling with gradients and hover effects
+- **Responsive Inputs** - Better form controls with focus states and validation
 
 ## 🐛 Troubleshooting
 
@@ -364,12 +434,11 @@ The UI uses CSS custom properties for easy theming:
    - Verify your Gemini API key is correct
    - Check your Google AI Studio account for rate limits
    - Ensure the selected Gemini model is available in your region
-   - Some Gemini models may be experimental and require special access
 
-6. **Provider-specific Issues**
-   - Make sure you have the correct API key for the selected provider
-   - Switch between OpenAI and Gemini models to test different providers
-   - Check the status bar for provider-specific error messages
+6. **Custom Values Issues**
+   - Ensure all keys are unique
+   - Check that required fields are filled
+   - Try refreshing the custom values panel
 
 ### Debug Mode
 
@@ -384,7 +453,7 @@ We welcome contributions! Here's how you can help:
 1. **Fork the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/ai-pr-extension.git
+   git clone https://github.com/AiyushKumar07/ai-pr-extension.git
    cd ai-pr-extension
    ```
 
@@ -425,6 +494,8 @@ Before submitting a PR, please test:
 - [ ] PR generation works on GitHub compare pages
 - [ ] Theme switching works
 - [ ] All UI elements are responsive
+- [ ] Custom values functionality works
+- [ ] Model selection works for both providers
 
 ## 📄 License
 
@@ -433,6 +504,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [OpenAI](https://openai.com/) for providing the AI models
+- [Google AI](https://ai.google/) for Gemini models
 - [GitHub](https://github.com/) for the platform integration
 - [Browser Extensions](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions) for the extension framework
 
@@ -443,6 +515,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Email**: aiyushkanojia@gmail.com
 
 ## 📅 Changelog
+
+### v1.6.0
+
+- ✨ **New Typography System** - Replaced Inter font with modern Outfit and Sora fonts
+- 🎨 **Enhanced Visual Design** - Improved section header centering and overall layout
+- 🔍 **Prominent Defaults Display** - Special highlighting for default values that are always included
+- 🎯 **Better Visual Hierarchy** - Improved spacing, shadows, and interactive elements
+- 📱 **Responsive Improvements** - Better mobile and desktop experience
+- 🎨 **Modern UI Elements** - Enhanced buttons, inputs, and section styling
+- ⚙️ **Advanced Custom Values** - Enhanced custom prompt properties with better validation and UI
+- 🔑 **Improved Key Management** - Individual delete buttons and enhanced security features
+- 📋 **Built-in Section Support** - Automatic inclusion of relevant PR sections
 
 ### v1.5.0
 
