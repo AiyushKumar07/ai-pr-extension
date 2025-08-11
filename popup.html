@@ -543,6 +543,59 @@
         font-weight: 600;
       }
 
+      .defaults-highlight {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+        border: 2px solid var(--accent-color);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        transition: all 0.3s ease;
+      }
+
+      .defaults-highlight:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+      }
+
+      .defaults-icon {
+        font-size: 24px;
+        flex-shrink: 0;
+      }
+
+      .defaults-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .defaults-text strong {
+        color: var(--accent-color);
+        font-weight: 700;
+      }
+
+      body.dark .defaults-highlight {
+        background: linear-gradient(
+          135deg,
+          rgba(137, 247, 254, 0.1) 0%,
+          rgba(102, 166, 255, 0.1) 100%
+        );
+        border-color: var(--accent-color);
+        box-shadow: 0 4px 12px rgba(137, 247, 254, 0.15);
+      }
+
+      body.dark .defaults-highlight:hover {
+        box-shadow: 0 6px 20px rgba(137, 247, 254, 0.2);
+      }
+
       .hardcoded-values {
         background: var(--section-bg);
         border: 2px solid var(--accent-color);
@@ -706,9 +759,13 @@
       </div>
       <div class="section-description">
         Add custom key–value pairs to enhance PR context and personalization.
-        <span class="highlight"
-          >Defaults (Purpose, Key Files Changed, Summary of Changes, Notes) are
-          always included.
+      </div>
+
+      <div class="defaults-highlight">
+        <span class="defaults-icon">📋</span>
+        <span class="defaults-text">
+          <strong>Defaults:</strong> Purpose, Key Files Changed, Summary of
+          Changes, Notes are always included.
         </span>
       </div>
 
