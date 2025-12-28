@@ -1,14 +1,15 @@
 # 🤖 AI PR Generator
 
-> A powerful browser extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models or Google's Gemini models by analyzing your GitHub diff.
+> A powerful browser extension that automatically generates professional Pull Request titles and descriptions using OpenAI's GPT models or Google's Gemini models by analyzing your GitHub commit messages and code diff.
 
 [![Web Store](https://img.shields.io/badge/Web%20Store-Install-blue?logo=google-chrome)](https://chromewebstore.google.com/detail/github-pr-scribe-ai/ajnplipmiafledgelgdajdfepjamafml/reviews)
-[![Version](https://img.shields.io/badge/version-1.6.0-brightgreen.svg)](https://github.com/AiyushKumar07/ai-pr-extension)
+[![Version](https://img.shields.io/badge/version-1.7.0-brightgreen.svg)](https://github.com/AiyushKumar07/ai-pr-extension)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## ✨ Features
 
-- **🎯 Smart PR Generation**: Automatically analyzes your GitHub diff and generates meaningful PR titles and descriptions
+- **💬 Intent-Aware Generation**: Automatically reads commit messages to understand **WHY** changes were made
+- **🎯 Smart PR Analysis**: Analyzes both commit history and code diff for comprehensive understanding
 - **🤖 Multiple AI Providers**: Support for both OpenAI GPT models and Google Gemini models
 - **📝 Structured Output**: Generates PRs with conventional commit types and organized markdown descriptions
 - **🎨 Modern Design System**: Beautiful UI with Outfit & Sora fonts, centered layouts, and professional styling
@@ -130,6 +131,92 @@ The extension automatically includes relevant sections when your PR contains spe
 - **Chores**: List tooling, dependency updates, or clean-up
 - **Testing**: List test cases added/updated
 
+## 💬 Intent-Aware PR Generation
+
+The extension **always** reads your commit messages to understand the **intent and context** behind your changes. This is not optional - it's the core feature that makes this extension powerful.
+
+### **How It Works**
+
+For every PR generation, the extension:
+
+1. **Reads all commit messages** from the GitHub compare page
+2. **Extracts commit titles, bodies, and authors**
+3. **Combines commits with code diff** for complete context
+4. **Sends everything to AI** with instructions to focus on intent
+5. **Generates descriptions that explain WHY**, not just what
+
+### **Example: The Difference**
+
+Imagine you made these commits:
+```
+feat: Add Redis caching layer
+refactor: Optimize database queries  
+fix: Resolve connection pool leak
+```
+
+**What you get:**
+```markdown
+feat: Introduce caching to reduce database load and improve response times
+
+**Purpose**: This PR addresses performance issues identified in production. 
+The database was experiencing high load (500+ QPS) during peak hours, causing 
+3-5s response times. This caching layer reduces DB queries by 80% and improves 
+response time to <500ms.
+
+**Approach**: Implemented Redis caching with intelligent TTL policies and 
+optimized query patterns to check cache first before hitting the database.
+
+**Key Changes**:
+- Added Redis caching layer with 5-minute TTL for hot data
+- Refactored queries to use cache-first pattern with automatic fallback
+- Fixed connection pool leak that was causing memory issues
+```
+
+The AI understands from your commits that you were solving a **performance problem**, not just "adding code". This creates PR descriptions that tell the complete story.
+
+### **Best Practices**
+
+To maximize the quality of generated PRs:
+
+1. **Write Descriptive Commit Messages**
+   ```bash
+   # ❌ Bad
+   git commit -m "update queries"
+   
+   # ✅ Good
+   git commit -m "refactor: Optimize queries to reduce DB load by 50%"
+   ```
+
+2. **Use Conventional Commits**
+   ```bash
+   feat: Add user authentication
+   fix: Resolve race condition in cache
+   refactor: Extract payment logic to service
+   docs: Update API documentation
+   ```
+
+3. **Include Context in Commit Bodies**
+   ```bash
+   git commit -m "feat: Add Redis caching for API responses" -m "
+   Our API was experiencing high load (500+ RPS) during peak hours,
+   causing 3-5s response times. This caching layer reduces DB queries
+   by 80% and improves response time to <500ms."
+   ```
+
+4. **Reference Issues When Relevant**
+   ```bash
+   git commit -m "fix: Resolve memory leak in WebSocket connections
+   
+   Closes #1234
+   
+   The connection pool was not properly cleaning up closed connections,
+   leading to memory exhaustion after ~6 hours of runtime."
+   ```
+
+### **When Commits Aren't Available**
+
+If the GitHub page doesn't show commits (rare cases), the extension automatically falls back to diff-only analysis. You'll still get good results, just without the intent context.
+
 ## 📖 How to Use
 
 ### Generating a PR
@@ -143,7 +230,7 @@ The extension automatically includes relevant sections when your PR contains spe
    - Click the AI PR Generator extension icon
    - Select your preferred AI model and provider (OpenAI or Gemini)
    - Click "🚀 Generate PR Description"
-   - Wait for the AI to analyze your diff and generate content
+   - Watch as the AI reads your commits and diff
 
 3. **Review and Submit**
    - The extension will automatically populate the PR title and description
@@ -492,6 +579,8 @@ Before submitting a PR, please test:
 - [ ] Extension loads without errors
 - [ ] API key management works
 - [ ] PR generation works on GitHub compare pages
+- [ ] Intent-aware generation correctly parses commits
+- [ ] Graceful fallback when commits unavailable
 - [ ] Theme switching works
 - [ ] All UI elements are responsive
 - [ ] Custom values functionality works
@@ -515,6 +604,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Email**: aiyushkanojia@gmail.com
 
 ## 📅 Changelog
+
+### v1.7.0
+
+- 💬 **Intent-Aware PR Generation (Always On)** - Core feature that always reads commit messages
+- 🧠 **Intent-Based Analysis** - AI understands WHY changes were made, not just WHAT changed
+- 🔄 **Smart Context Parsing** - Extracts commit titles, bodies, and authors automatically
+- 📝 **Enhanced Prompts** - AI instructions optimized to leverage commit message context
+- 🎯 **Superior PR Quality** - Generates contextual, meaningful PR descriptions by default
+- 🚀 **Streamlined UX** - No toggles, no configuration - just works out of the box
+- 📖 **Updated Documentation** - Comprehensive guide with best practices for commit messages
 
 ### v1.6.0
 

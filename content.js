@@ -139,6 +139,29 @@ window.addEventListener('ai-pr-gen', async e => {
 
   try {
     const { prTitleInput, prDescInput } = await waitForPRForm();
+
+    // Always parse commits for intent-aware generation
+    postStatus('📝 Reading commits...', 'blue', 'info');
+    const commits = parseCommits();
+
+    let commitsContext = '';
+    if (commits.length > 0) {
+      commitsContext = '\n\nCommit History:\n';
+      commits.forEach((commit, index) => {
+        commitsContext += `\nCommit ${index + 1}:\n`;
+        commitsContext += `Title: ${commit.title}\n`;
+        if (commit.body) {
+          commitsContext += `Message: ${commit.body}\n`;
+        }
+        if (commit.author) {
+          commitsContext += `Author: ${commit.author}\n`;
+        }
+      });
+      console.log('Extracted Commits:', commits);
+    } else {
+      console.log('No commits found on page, will use diff-only analysis');
+    }
+
     postStatus('📖 Reading diff...', 'blue', 'info');
     const diff = parseDiff();
 
@@ -157,14 +180,22 @@ window.addEventListener('ai-pr-gen', async e => {
       console.log('No custom values found or customValues is empty');
     }
 
+    // Build enhanced prompt with commit context
+    const promptIntro = commits.length > 0
+      ? `Given the following GitHub PR with commit messages and code diff, generate a concise Pull Request title and a structured markdown description.
+
+IMPORTANT: Use the commit messages to understand the INTENT and CONTEXT behind the changes. The commits reveal WHY these changes were made, not just WHAT changed. Summarize the overall purpose and goal of this PR based on the commit history and code changes.`
+      : `Given the following GitHub PR diff, generate a concise Pull Request title and a structured markdown description.`;
+
     const prompt = `
-Given the following GitHub PR diff, generate a concise Pull Request title and a structured markdown description using the format below.
+${promptIntro}
+${commitsContext}
 
 Return only:
 A PR title prefixed with conventional commit types (feat, fix, chore, refactor, etc.)
 Two line breaks
 Then the PR description using the following markdown structure:
-**Purpose** : Briefly describe the purpose of the PR.
+**Purpose** : Briefly describe the PURPOSE and INTENT of the PR${commits.length > 0 ? ' (use commit messages to understand the why, not just what changed)' : ''}.
 **Key Files Changed** : List the key files changed in the PR with what was changed.
 **Summary of Changes** : Bullet point summary of changes (e.g., updated APIs, refactored services, added endpoints, etc.)
 ${customValuesContext}
@@ -223,7 +254,7 @@ ${diff}
     } catch (err) {
       postStatus(
         `❌ ${provider === 'openai' ? 'OpenAI' : 'Gemini'} Error: ` +
-          err.message,
+        err.message,
         'red',
         'error'
       );
@@ -243,6 +274,77 @@ ${diff}
     return;
   }
 });
+
+function parseCommits() {
+  console.log('Parsing commit messages from the page...');
+
+  try {
+    const commits = [];
+
+    // Try multiple selectors to find commits on GitHub compare page
+    const commitElements = document.querySelectorAll(
+      '.commit-message, .commit-title, [data-testid="commit-row"]'
+    );
+
+    if (commitElements.length === 0) {
+      console.log('No commits found using primary selectors, trying alternatives...');
+
+      // Alternative: Look for commit groups
+      const commitGroups = document.querySelectorAll('.TimelineItem-body');
+      commitGroups.forEach(group => {
+        const titleElement = group.querySelector('.commit-title, .message');
+        const bodyElement = group.querySelector('.commit-desc, .commit-message');
+        const authorElement = group.querySelector('.commit-author, [data-hovercard-type="user"]');
+
+        if (titleElement) {
+          const title = titleElement.textContent.trim();
+          const body = bodyElement ? bodyElement.textContent.trim() : '';
+          const author = authorElement ? authorElement.textContent.trim() : '';
+
+          if (title) {
+            commits.push({
+              title: title,
+              body: body,
+              author: author,
+            });
+          }
+        }
+      });
+    } else {
+      // Parse commits from commit elements
+      commitElements.forEach(element => {
+        const titleElement =
+          element.querySelector('.commit-title') ||
+          element.querySelector('[data-testid="commit-title"]') ||
+          element;
+        const bodyElement =
+          element.querySelector('.commit-desc') ||
+          element.querySelector('[data-testid="commit-message"]');
+        const authorElement =
+          element.querySelector('.commit-author') ||
+          element.querySelector('[data-hovercard-type="user"]');
+
+        const title = titleElement ? titleElement.textContent.trim() : '';
+        const body = bodyElement ? bodyElement.textContent.trim() : '';
+        const author = authorElement ? authorElement.textContent.trim() : '';
+
+        if (title) {
+          commits.push({
+            title: title,
+            body: body,
+            author: author,
+          });
+        }
+      });
+    }
+
+    console.log(`Found ${commits.length} commit(s).`);
+    return commits;
+  } catch (error) {
+    console.error('Error parsing commits:', error);
+    return [];
+  }
+}
 
 function parseDiff() {
   console.log('Parsing diff from the page...');
