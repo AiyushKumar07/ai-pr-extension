@@ -751,73 +751,60 @@
       <button class="btn-success" id="saveKeyBtn">💾 Save & Close</button>
     </div>
 
-    <!-- Custom Values Section -->
-    <div class="main-section" id="customValuesSection" style="display: none">
+    <!-- PR Templates Section -->
+    <div class="main-section" id="templatesSection" style="display: none">
       <div class="section-header">
-        <span>⚙️</span>
-        <span>Custom Prompt Properties</span>
+        <span>📋</span>
+        <span>PR Description Templates</span>
       </div>
       <div class="section-description">
-        Add custom key–value pairs to enhance PR context and personalization.
+        Choose a PR template or create your own. Templates define the structure
+        of your PR descriptions with mandatory (**) and optional (#) fields.
       </div>
 
-      <div class="defaults-highlight">
-        <span class="defaults-icon">📋</span>
-        <span class="defaults-text">
-          <strong>Defaults:</strong> Purpose, Key Files Changed, Summary of
-          Changes, Notes are always included.
-        </span>
+      <!-- Template Selector -->
+      <div class="template-selector" style="margin: 20px 0">
+        <label for="templateDropdown" style="display: block; margin-bottom: 8px; font-weight: 500">
+          Select Template:
+        </label>
+        <select id="templateDropdown" class="template-dropdown" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-size: 14px">
+          <option value="default">🎯 Default (Comprehensive)</option>
+          <option value="minimal">⚡ Minimal (Quick)</option>
+          <option value="custom">✏️ Custom (Create Your Own)</option>
+        </select>
       </div>
 
-      <div class="hardcoded-values">
-        <h6>
-          📋 Built-in Optional Sections (Can be used if your PR contains these
-          sections)
-        </h6>
-        <p
-          style="
-            font-size: 11px;
-            opacity: 0.8;
-            margin: 8px 0 12px 0;
-            font-style: italic;
-          "
-        >
-          These sections are automatically included when its relevant to the PR.
+      <!-- Template Preview -->
+      <div class="template-preview" id="templatePreview" style="background: var(--card-bg); padding: 15px; border-radius: 8px; margin: 20px 0">
+        <h3 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600">Template Structure:</h3>
+        <div class="template-fields" style="line-height: 1.8; font-size: 13px">
+          <!-- Will be populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Custom Template Editor -->
+      <div id="customTemplateEditor" style="display: none; margin: 20px 0">
+        <h3 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600">Custom Template Editor</h3>
+        <p class="field-help" style="font-size: 12px; opacity: 0.8; margin-bottom: 15px">
+          <strong>**</strong> Mandatory field (required in all PRs)<br>
+          <strong>#</strong> Optional field (included only when relevant)
         </p>
-        <ul>
-          <li>
-            <strong>Approach:</strong> Explain the approach, logic, or
-            architectural decisions
-          </li>
-          <li>
-            <strong>Bug Fixes:</strong> List the issue fixes if it's a bug fix
-          </li>
-          <li>
-            <strong>Refactoring:</strong> List structural/code improvements if
-            refactoring
-          </li>
-          <li>
-            <strong>Chores:</strong> List tooling, dependency updates, or
-            clean-up
-          </li>
-          <li><strong>Testing:</strong> List test cases added/updated</li>
-        </ul>
+        
+        <div id="customFieldsList">
+          <!-- Custom fields will be dynamically added here -->
+        </div>
+
+        <div class="button-row">
+          <button class="view-btn" id="addMandatoryFieldBtn">
+            ➕ Add Mandatory Field
+          </button>
+          <button class="view-btn" id="addOptionalFieldBtn">
+            ➕ Add Optional Field
+          </button>
+        </div>
       </div>
 
-      <div id="customValuesList">
-        <!-- Custom values will be dynamically added here -->
-      </div>
-
-      <div class="button-row">
-        <button class="view-btn" id="addCustomValueBtn">
-          ➕ Add Custom Property
-        </button>
-      </div>
-      <div class="button-row">
-        <button class="btn-success" id="saveCustomValuesBtn">
-          💾 Save Custom Properties
-        </button>
-      </div>
+      <button class="btn-success" id="saveTemplateBtn">💾 Save Template</button>
     </div>
 
     <!-- Main Controls -->
@@ -830,8 +817,8 @@
       <button class="btn-secondary" id="changeKeyBtn">
         🔑 Change API Keys
       </button>
-      <button class="btn-secondary" id="customValuesBtn">
-        ⚙️ Custom Prompt Values
+      <button class="btn-secondary" id="templatesBtn">
+        📋 PR Templates
       </button>
 
       <div class="dropdown">
