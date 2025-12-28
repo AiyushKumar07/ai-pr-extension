@@ -124,7 +124,7 @@ async function makeGeminiRequest(apiKey, model, prompt) {
 }
 
 window.addEventListener('ai-pr-gen', async e => {
-  const { apiKey, model, provider, customValues } = e.detail;
+  const { apiKey, model, provider, template } = e.detail;
 
   // Prevent multiple executions of the same request
   if (window.isProcessingPRRequest) {
@@ -159,11 +159,24 @@ window.addEventListener('ai-pr-gen', async e => {
     postStatus('📖 Reading diff...', 'blue', 'info');
     const diff = parseDiff();
 
-    let customValuesContext = '';
-    if (customValues && customValues.length > 0) {
-      customValues.forEach(({ key, value }) => {
-        customValuesContext += `**${key}**: ${value}\n`;
-      });
+    // Build template structure for the AI prompt
+    let templateStructure = '';
+    if (template && (template.mandatory || template.optional)) {
+      templateStructure = '\n\nPR Description Template:\n';
+
+      if (template.mandatory && template.mandatory.length > 0) {
+        templateStructure += '\nMandatory Sections (MUST be included):\n';
+        template.mandatory.forEach(field => {
+          templateStructure += `**${field}** : [Describe ${field}]\n`;
+        });
+      }
+
+      if (template.optional && template.optional.length > 0) {
+        templateStructure += '\nOptional Sections (Include only if relevant):\n';
+        template.optional.forEach(field => {
+          templateStructure += `**${field}** : [Describe ${field}]\n`;
+        });
+      }
     }
 
     // Build enhanced prompt with commit context
@@ -181,10 +194,9 @@ Return only:
 A PR title prefixed with conventional commit types (feat, fix, chore, refactor, etc.)
 Two line breaks
 Then the PR description using the following markdown structure:
-**Purpose** : Briefly describe the PURPOSE and INTENT of the PR${commits.length > 0 ? ' (use commit messages to understand the why, not just what changed)' : ''}.
+${templateStructure || `**Purpose** : Briefly describe the PURPOSE and INTENT of the PR${commits.length > 0 ? ' (use commit messages to understand the why, not just what changed)' : ''}.
 **Key Files Changed** : List the key files changed in the PR with what was changed.
 **Summary of Changes** : Bullet point summary of changes (e.g., updated APIs, refactored services, added endpoints, etc.)
-${customValuesContext}
 **Notes** : Any additional notes or context that would be helpful for the reviewer.
 
 Built-in Optional Sections:
@@ -192,7 +204,7 @@ Built-in Optional Sections:
 **Bug Fixes** : If the PR is a bug fix, list the issue fixes.
 **Refactoring** : If the PR is a refactoring, list the structural/code improvements.
 **Chores** : If the PR is a chore, list the tooling, dependency updates, or clean-up.
-**Testing** : If the PR is a test, list the test cases added/updated.
+**Testing** : If the PR is a test, list the test cases added/updated.`}
 
 Only return the title first, then two line breaks, then the markdown content.
 
