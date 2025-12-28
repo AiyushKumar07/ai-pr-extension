@@ -24,7 +24,6 @@ function simulateInput(el, value) {
 async function makeOpenAIRequest(apiKey, model, prompt) {
   // Ensure the prompt is properly encoded
   const encodedPrompt = prompt.replace(/[^\x00-\x7F]/g, '');
-  console.log('Encoded Prompt:', encodedPrompt);
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -51,7 +50,8 @@ async function makeOpenAIRequest(apiKey, model, prompt) {
     throw new Error('Empty or invalid response from OpenAI');
   }
 
-  return data.choices[0].message.content || '';
+  const content = data.choices[0].message.content || '';
+  return content;
 }
 
 async function makeGeminiRequest(apiKey, model, prompt) {
@@ -78,8 +78,6 @@ async function makeGeminiRequest(apiKey, model, prompt) {
   };
 
   const apiModel = modelMap[model] || model;
-
-  // Ensure the prompt is properly encoded
   const encodedPrompt = prompt.replace(/[^\x00-\x7F]/g, '');
 
   const res = await fetch(
@@ -121,16 +119,15 @@ async function makeGeminiRequest(apiKey, model, prompt) {
     throw new Error('Empty or invalid response from Gemini');
   }
 
-  return data.candidates[0].content.parts[0].text || '';
+  const content = data.candidates[0].content.parts[0].text || '';
+  return content;
 }
 
 window.addEventListener('ai-pr-gen', async e => {
-  console.log('Event "ai-pr-gen" received in content script.');
   const { apiKey, model, provider, customValues } = e.detail;
 
   // Prevent multiple executions of the same request
   if (window.isProcessingPRRequest) {
-    console.log('PR request already in progress, ignoring duplicate event.');
     return;
   }
 
@@ -157,27 +154,16 @@ window.addEventListener('ai-pr-gen', async e => {
           commitsContext += `Author: ${commit.author}\n`;
         }
       });
-      console.log('Extracted Commits:', commits);
-    } else {
-      console.log('No commits found on page, will use diff-only analysis');
     }
 
     postStatus('📖 Reading diff...', 'blue', 'info');
     const diff = parseDiff();
 
-    console.log('Extracted Diff:', diff);
-    console.log('Custom Values:', customValues);
-
-    // Build custom values context if any exist
     let customValuesContext = '';
     if (customValues && customValues.length > 0) {
       customValues.forEach(({ key, value }) => {
         customValuesContext += `**${key}**: ${value}\n`;
       });
-      console.log('Custom Values Context:', customValuesContext);
-      console.log('Custom Values Context Length:', customValuesContext.length);
-    } else {
-      console.log('No custom values found or customValues is empty');
     }
 
     // Build enhanced prompt with commit context
@@ -213,12 +199,10 @@ Only return the title first, then two line breaks, then the markdown content.
 PR Diff:
 ${diff}
 `;
-    console.log('Generated Prompt:', prompt);
 
     try {
       const providerName = provider === 'openai' ? 'OpenAI' : 'Gemini';
       postStatus(`🤖 Sending to ${providerName}...`, 'blue', 'info');
-      console.log(`Sending request to ${providerName} API...`);
 
       let content;
       if (provider === 'openai') {
@@ -229,24 +213,22 @@ ${diff}
         throw new Error(`Unsupported provider: ${provider}`);
       }
 
-      console.log(`Received response from ${providerName}:`, content);
-
       if (!content) {
         postStatus(`⚠️ Empty response from ${providerName}`, 'orange');
-        console.error(`Empty response from ${providerName}`);
+        window.isProcessingPRRequest = false;
         return;
       }
 
       const [title, ...bodyLines] = content.split('\n');
+      const body = bodyLines.join('\n').trim();
+
       simulateInput(prTitleInput, title.trim());
-      simulateInput(prDescInput, bodyLines.join('\n').trim());
+      simulateInput(prDescInput, body);
+
       postStatus(
         `✅ PR details added via ${providerName}!`,
         'green',
         'success'
-      );
-      console.log(
-        `Successfully populated PR title and description using ${providerName}.`
       );
 
       // Reset processing flag
@@ -258,71 +240,27 @@ ${diff}
         'red',
         'error'
       );
-      console.error(
-        `${provider === 'openai' ? 'OpenAI' : 'Gemini'} error:`,
-        err
-      );
 
       // Reset processing flag
       window.isProcessingPRRequest = false;
     }
   } catch (err) {
     postStatus('🚫 ' + err.message, 'red', 'error');
-
-    // Reset processing flag
     window.isProcessingPRRequest = false;
     return;
   }
 });
 
 function parseCommits() {
-  console.log('Parsing commit messages from the page...');
-
   try {
     const commits = [];
+    const commitRows = document.querySelectorAll('.Box-row.js-commits-list-item');
 
-    // Try multiple selectors to find commits on GitHub compare page
-    const commitElements = document.querySelectorAll(
-      '.commit-message, .commit-title, [data-testid="commit-row"]'
-    );
-
-    if (commitElements.length === 0) {
-      console.log('No commits found using primary selectors, trying alternatives...');
-
-      // Alternative: Look for commit groups
-      const commitGroups = document.querySelectorAll('.TimelineItem-body');
-      commitGroups.forEach(group => {
-        const titleElement = group.querySelector('.commit-title, .message');
-        const bodyElement = group.querySelector('.commit-desc, .commit-message');
-        const authorElement = group.querySelector('.commit-author, [data-hovercard-type="user"]');
-
-        if (titleElement) {
-          const title = titleElement.textContent.trim();
-          const body = bodyElement ? bodyElement.textContent.trim() : '';
-          const author = authorElement ? authorElement.textContent.trim() : '';
-
-          if (title) {
-            commits.push({
-              title: title,
-              body: body,
-              author: author,
-            });
-          }
-        }
-      });
-    } else {
-      // Parse commits from commit elements
-      commitElements.forEach(element => {
-        const titleElement =
-          element.querySelector('.commit-title') ||
-          element.querySelector('[data-testid="commit-title"]') ||
-          element;
-        const bodyElement =
-          element.querySelector('.commit-desc') ||
-          element.querySelector('[data-testid="commit-message"]');
-        const authorElement =
-          element.querySelector('.commit-author') ||
-          element.querySelector('[data-hovercard-type="user"]');
+    if (commitRows.length > 0) {
+      commitRows.forEach((row, idx) => {
+        const titleElement = row.querySelector('.Link--primary.text-bold.js-navigation-open');
+        const bodyElement = row.querySelector('.Details-content--hidden pre');
+        const authorElement = row.querySelector('.commit-author');
 
         const title = titleElement ? titleElement.textContent.trim() : '';
         const body = bodyElement ? bodyElement.textContent.trim() : '';
@@ -336,19 +274,68 @@ function parseCommits() {
           });
         }
       });
+    } else {
+      const commitElements = document.querySelectorAll(
+        '.commit-message, .commit-title, [data-testid="commit-row"]'
+      );
+
+      if (commitElements.length === 0) {
+        const commitGroups = document.querySelectorAll('.TimelineItem-body');
+
+        commitGroups.forEach((group, idx) => {
+          const titleElement = group.querySelector('.commit-title, .message');
+          const bodyElement = group.querySelector('.commit-desc, .commit-message');
+          const authorElement = group.querySelector('.commit-author, [data-hovercard-type="user"]');
+
+          if (titleElement) {
+            const title = titleElement.textContent.trim();
+            const body = bodyElement ? bodyElement.textContent.trim() : '';
+            const author = authorElement ? authorElement.textContent.trim() : '';
+
+            if (title) {
+              commits.push({
+                title: title,
+                body: body,
+                author: author,
+              });
+            }
+          }
+        });
+      } else {
+        commitElements.forEach((element, idx) => {
+          const titleElement =
+            element.querySelector('.commit-title') ||
+            element.querySelector('[data-testid="commit-title"]') ||
+            element;
+          const bodyElement =
+            element.querySelector('.commit-desc') ||
+            element.querySelector('[data-testid="commit-message"]');
+          const authorElement =
+            element.querySelector('.commit-author') ||
+            element.querySelector('[data-hovercard-type="user"]');
+
+          const title = titleElement ? titleElement.textContent.trim() : '';
+          const body = bodyElement ? bodyElement.textContent.trim() : '';
+          const author = authorElement ? authorElement.textContent.trim() : '';
+
+          if (title) {
+            commits.push({
+              title: title,
+              body: body,
+              author: author,
+            });
+          }
+        });
+      }
     }
 
-    console.log(`Found ${commits.length} commit(s).`);
     return commits;
   } catch (error) {
-    console.error('Error parsing commits:', error);
     return [];
   }
 }
 
 function parseDiff() {
-  console.log('Parsing diff from the page...');
-
   const IGNORED_EXTENSIONS = [
     // Images
     '.png',
@@ -392,24 +379,21 @@ function parseDiff() {
   const files = [...document.querySelectorAll('.file-header')];
 
   const diffData = files
-    .map(file => {
+    .map((file, idx) => {
       const filename = file.querySelector('.file-info a')?.title.trim();
 
       if (!filename) {
-        console.warn('Skipping a file element without a filename.');
         return null;
       }
 
       const fileExtension = filename.slice(filename.lastIndexOf('.'));
       if (IGNORED_EXTENSIONS.includes(fileExtension)) {
-        console.log(`Skipping binary or non-code file: ${filename}`);
         return null;
       }
 
       const diffContentElement =
         file.nextElementSibling.querySelector('.js-diff-table');
       if (!diffContentElement) {
-        console.warn(`Could not find diff content for file: ${filename}`);
         return null;
       }
 
@@ -419,7 +403,6 @@ function parseDiff() {
     .filter(Boolean)
     .join('\n\n');
 
-  console.log('Finished parsing diff.');
   return diffData;
 }
 
