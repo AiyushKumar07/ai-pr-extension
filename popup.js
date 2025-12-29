@@ -20,11 +20,18 @@ const templatesBtn = document.getElementById('templatesBtn');
 const templatesSection = document.getElementById('templatesSection');
 const templateDropdown = document.getElementById('templateDropdown');
 const templatePreview = document.getElementById('templatePreview');
-const customTemplateEditor = document.getElementById('customTemplateEditor');
-const addMandatoryFieldBtn = document.getElementById('addMandatoryFieldBtn');
-const addOptionalFieldBtn = document.getElementById('addOptionalFieldBtn');
-const saveTemplateBtn = document.getElementById('saveTemplateBtn');
-const customFieldsList = document.getElementById('customFieldsList');
+const customTemplatesSection = document.getElementById('customTemplatesSection');
+const customTemplateCreator = document.getElementById('customTemplateCreator');
+const createTemplateBtn = document.getElementById('createTemplateBtn');
+const templateNameInput = document.getElementById('templateNameInput');
+const templateFieldsInput = document.getElementById('templateFieldsInput');
+const saveNewTemplateBtn = document.getElementById('saveNewTemplateBtn');
+const cancelTemplateBtn = document.getElementById('cancelTemplateBtn');
+const customTemplatesContainer = document.getElementById('customTemplatesContainer');
+const creatorTitle = document.getElementById('creatorTitle');
+const backToSelectionBtn = document.getElementById('backToSelectionBtn');
+const saveTemplateSelectionBtn = document.getElementById('saveTemplateSelectionBtn');
+const nameCharCount = document.getElementById('nameCharCount');
 
 let openaiKey = '';
 let geminiKey = '';
@@ -35,7 +42,9 @@ let showGeminiKey = false;
 let tempOpenaiKey = '';
 let tempGeminiKey = '';
 let selectedTemplate = 'default';
-let customTemplate = { mandatory: [], optional: [] };
+let tempSelectedTemplate = 'default'; // Temporary selection before saving
+let customTemplates = {}; // { templateId: { name, mandatory: [], optional: [] } }
+let editingTemplateId = null;
 let statusTimeout = null;
 let isGenerating = false;
 
@@ -68,18 +77,33 @@ function updateSelectedModelUI(model, provider) {
 }
 
 function updateTemplatesButtonText() {
-  const templateName = selectedTemplate === 'custom' ? 'Custom' : templates[selectedTemplate]?.name || 'Default';
+  // Don't update button text if the panel is currently open
+  if (templatesSection.style.display === 'block') {
+    return;
+  }
+
+  let templateName;
+  if (templates[selectedTemplate]) {
+    templateName = templates[selectedTemplate].name;
+  } else if (customTemplates[selectedTemplate]) {
+    templateName = customTemplates[selectedTemplate].name;
+  } else {
+    templateName = 'Default';
+  }
   templatesBtn.innerHTML = `📋 Template: ${templateName}`;
 }
 
-function renderTemplatePreview(templateType) {
-  const template = templateType === 'custom' ? customTemplate : templates[templateType];
+function getActiveTemplate() {
+  return templates[selectedTemplate] || customTemplates[selectedTemplate] || templates.default;
+}
+
+function renderTemplatePreview(templateId) {
+  const template = templates[templateId] || customTemplates[templateId];
   if (!template) return;
 
   const fieldsDiv = templatePreview.querySelector('.template-fields');
   fieldsDiv.innerHTML = '';
 
-  // Render mandatory fields
   if (template.mandatory && template.mandatory.length > 0) {
     const mandatorySection = document.createElement('div');
     mandatorySection.style.marginBottom = '15px';
@@ -96,7 +120,6 @@ function renderTemplatePreview(templateType) {
     fieldsDiv.appendChild(mandatorySection);
   }
 
-  // Render optional fields
   if (template.optional && template.optional.length > 0) {
     const optionalSection = document.createElement('div');
     optionalSection.innerHTML = '<strong style="color: var(--secondary);"># Optional Fields:</strong>';
@@ -114,33 +137,281 @@ function renderTemplatePreview(templateType) {
   }
 }
 
-function createCustomFieldItem(fieldName = '', isMandatory = true) {
-  const item = document.createElement('div');
-  item.className = 'custom-value-item';
-  item.style.cssText = 'display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: var(--card-bg); border-radius: 8px';
+function parseTemplateFields(text) {
+  const lines = text.split('\n').filter(line => line.trim());
+  const mandatory = [];
+  const optional = [];
 
-  const typeIndicator = document.createElement('span');
-  typeIndicator.textContent = isMandatory ? '**' : '#';
-  typeIndicator.style.cssText = `font-weight: bold; font-size: 18px; color: ${isMandatory ? 'var(--primary)' : 'var(--secondary)'};`;
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('**')) {
+      const fieldName = trimmed.substring(2).trim();
+      if (fieldName) mandatory.push(fieldName);
+    } else if (trimmed.startsWith('#')) {
+      const fieldName = trimmed.substring(1).trim();
+      if (fieldName) optional.push(fieldName);
+    }
+  });
 
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.value = fieldName;
-  input.placeholder = isMandatory ? 'Mandatory field name' : 'Optional field name';
-  input.style.cssText = 'flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text)';
-  input.dataset.mandatory = isMandatory;
+  return { mandatory, optional };
+}
 
-  const removeBtn = document.createElement('button');
-  removeBtn.textContent = '🗑️';
-  removeBtn.className = 'remove-btn';
-  removeBtn.style.cssText = 'padding: 8px 12px; border-radius: 6px; cursor: pointer; background: var(--error-color); color: white; border: none';
-  removeBtn.onclick = () => item.remove();
+function renderCustomTemplatesList() {
+  customTemplatesContainer.innerHTML = '';
 
-  item.appendChild(typeIndicator);
-  item.appendChild(input);
-  item.appendChild(removeBtn);
+  const customIds = Object.keys(customTemplates);
+  if (customIds.length === 0) {
+    customTemplatesContainer.innerHTML = '<p style="opacity: 0.6; font-size: 13px; text-align: center; padding: 20px">No custom templates yet. Create one to get started!</p>';
+    return;
+  }
 
-  return item;
+  customIds.forEach(templateId => {
+    const template = customTemplates[templateId];
+    const item = document.createElement('div');
+    const isActive = selectedTemplate === templateId;
+
+    // Main card container with vertical layout
+    item.style.cssText = `
+      display: flex; 
+      flex-direction: column;
+      gap: 12px; 
+      padding: 16px; 
+      background: var(--bg); 
+      border-radius: 8px; 
+      border: 2px solid ${isActive ? 'var(--primary)' : 'var(--border-color)'}; 
+      cursor: pointer; 
+      transition: all 0.2s;
+    `;
+
+    // Make the whole card clickable to select the template
+    item.onclick = (e) => {
+      // Don't select if clicking edit or delete buttons
+      if (e.target.tagName === 'BUTTON') return;
+      selectCustomTemplate(templateId);
+    };
+
+    item.onmouseenter = () => {
+      if (!isActive) {
+        item.style.borderColor = 'var(--primary)';
+        item.style.opacity = '0.8';
+      }
+    };
+
+    item.onmouseleave = () => {
+      if (!isActive) {
+        item.style.borderColor = 'var(--border-color)';
+        item.style.opacity = '1';
+      }
+    };
+
+    // Top row: Name + Active label
+    const topRow = document.createElement('div');
+    topRow.style.cssText = 'display: flex; align-items: center; gap: 10px; justify-content: space-between;';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = template.name;
+    nameSpan.style.cssText = `
+      font-weight: 600; 
+      font-size: 15px;
+      word-wrap: break-word; 
+      word-break: break-word; 
+      overflow-wrap: break-word; 
+      flex: 1;
+      ${isActive ? 'color: var(--primary)' : ''}
+    `;
+
+    topRow.appendChild(nameSpan);
+
+    if (isActive) {
+      const activeLabel = document.createElement('span');
+      activeLabel.textContent = '✓ Active';
+      activeLabel.style.cssText = `
+        font-size: 11px; 
+        color: white;
+        background: var(--primary);
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-weight: 600; 
+        white-space: nowrap;
+      `;
+      topRow.appendChild(activeLabel);
+    }
+
+    // Bottom row: Edit and Delete buttons
+    const buttonRow = document.createElement('div');
+    buttonRow.style.cssText = 'display: flex; gap: 8px;';
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✏️ Edit';
+    editBtn.style.cssText = `
+      flex: 1;
+      padding: 8px 12px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      background: var(--primary); 
+      color: white; 
+      border: none; 
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    `;
+    editBtn.onclick = (e) => {
+      e.stopPropagation();
+      editTemplate(templateId);
+    };
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '🗑️ Delete';
+    deleteBtn.style.cssText = `
+      flex: 1;
+      padding: 8px 12px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      background: var(--error-color); 
+      color: white; 
+      border: none; 
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    `;
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
+      deleteTemplate(templateId);
+    };
+
+    buttonRow.appendChild(editBtn);
+    buttonRow.appendChild(deleteBtn);
+
+    // Assemble the card
+    item.appendChild(topRow);
+    item.appendChild(buttonRow);
+    customTemplatesContainer.appendChild(item);
+  });
+}
+
+function selectCustomTemplate(templateId) {
+  // Update temporary selection (don't save yet)
+  tempSelectedTemplate = templateId;
+  selectedTemplate = templateId;
+
+  chrome.storage.local.set({ selectedTemplate: selectedTemplate }, () => {
+    // Switch back to main template view
+    customTemplatesSection.style.display = 'none';
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
+
+    renderCustomTemplatesList();
+    populateTemplateDropdown();
+    renderTemplatePreview(templateId);
+    setStatus(`Template "${customTemplates[templateId].name}" selected! Click "Save & Close" to apply.`, '#1a73e8');
+  });
+}
+
+function populateTemplateDropdown() {
+  // Clear all options
+  templateDropdown.innerHTML = '';
+
+  // Add built-in templates
+  const defaultOption = document.createElement('option');
+  defaultOption.value = 'default';
+  defaultOption.textContent = '🎯 Default (Comprehensive)';
+  templateDropdown.appendChild(defaultOption);
+
+  const minimalOption = document.createElement('option');
+  minimalOption.value = 'minimal';
+  minimalOption.textContent = '⚡ Minimal (Quick)';
+  templateDropdown.appendChild(minimalOption);
+
+  // Add custom templates if any exist
+  const customIds = Object.keys(customTemplates);
+  if (customIds.length > 0) {
+    const separator1 = document.createElement('option');
+    separator1.disabled = true;
+    separator1.textContent = '── Custom Templates ──';
+    templateDropdown.appendChild(separator1);
+
+    customIds.forEach(templateId => {
+      const option = document.createElement('option');
+      option.value = templateId;
+      option.textContent = `✏️ ${customTemplates[templateId].name}`;
+      templateDropdown.appendChild(option);
+    });
+  }
+
+  // Add separator and manage option
+  const separator2 = document.createElement('option');
+  separator2.disabled = true;
+  separator2.textContent = '──────────────';
+  templateDropdown.appendChild(separator2);
+
+  const manageOption = document.createElement('option');
+  manageOption.value = '__custom_section__';
+  manageOption.textContent = '✏️ Manage Custom Templates...';
+  templateDropdown.appendChild(manageOption);
+
+  // Set current selection (use tempSelectedTemplate when panel is open, otherwise use selectedTemplate)
+  const currentSelection = templatesSection.style.display === 'block' ? tempSelectedTemplate : selectedTemplate;
+  if (templates[currentSelection] || customTemplates[currentSelection]) {
+    templateDropdown.value = currentSelection;
+  } else {
+    templateDropdown.value = 'default';
+  }
+}
+
+function editTemplate(templateId) {
+  editingTemplateId = templateId;
+  const template = customTemplates[templateId];
+
+  creatorTitle.textContent = 'Edit Template';
+  templateNameInput.value = template.name;
+
+  // Update character counter
+  const length = template.name.length;
+  nameCharCount.textContent = `(${length}/30)`;
+  if (length > 30) {
+    nameCharCount.style.color = 'var(--error-color)';
+  } else if (length < 3) {
+    nameCharCount.style.color = '#ff9800';
+  } else {
+    nameCharCount.style.color = 'var(--primary)';
+  }
+
+  // Convert template fields back to text format
+  const fieldsText = [
+    ...template.mandatory.map(f => `**${f}`),
+    ...template.optional.map(f => `#${f}`)
+  ].join('\n');
+
+  templateFieldsInput.value = fieldsText;
+
+  customTemplatesSection.style.display = 'none';
+  customTemplateCreator.style.display = 'block';
+}
+
+function deleteTemplate(templateId) {
+  if (confirm(`Delete template "${customTemplates[templateId].name}"?`)) {
+    delete customTemplates[templateId];
+
+    // If deleted template was selected, switch to default
+    if (selectedTemplate === templateId) {
+      selectedTemplate = 'default';
+      chrome.storage.local.set({ selectedTemplate: 'default' });
+    }
+
+    chrome.storage.local.set({ customTemplates: customTemplates }, () => {
+      renderCustomTemplatesList();
+      populateTemplateDropdown();
+      updateTemplatesButtonText();
+      renderTemplatePreview(selectedTemplate);
+      setStatus('Template deleted!', 'green');
+    });
+  }
 }
 
 function updateKeySectionVisibility() {
@@ -199,6 +470,20 @@ modelList.addEventListener('click', e => {
   }
 });
 
+// Character counter for template name
+templateNameInput.addEventListener('input', () => {
+  const length = templateNameInput.value.length;
+  nameCharCount.textContent = `(${length}/30)`;
+
+  if (length > 30) {
+    nameCharCount.style.color = 'var(--error-color)';
+  } else if (length < 3) {
+    nameCharCount.style.color = '#ff9800'; // Orange for warning
+  } else {
+    nameCharCount.style.color = 'var(--primary)';
+  }
+});
+
 window.onload = () => {
   console.log('Popup loaded.');
   chrome.storage.local.get(
@@ -209,7 +494,7 @@ window.onload = () => {
       'selectedProvider',
       'theme',
       'selectedTemplate',
-      'customTemplate',
+      'customTemplates',
     ],
     data => {
       if (data.openaiKey) {
@@ -230,15 +515,14 @@ window.onload = () => {
 
       if (data.selectedTemplate) {
         selectedTemplate = data.selectedTemplate;
-        templateDropdown.value = selectedTemplate;
       } else {
         selectedTemplate = 'default';
       }
 
-      if (data.customTemplate) {
-        customTemplate = data.customTemplate;
+      if (data.customTemplates) {
+        customTemplates = data.customTemplates;
       } else {
-        customTemplate = { mandatory: [], optional: [] };
+        customTemplates = {};
       }
 
       console.log('Stored data loaded:', data);
@@ -257,8 +541,10 @@ window.onload = () => {
 
       updateSelectedModelUI(selectedModel, selectedProvider);
       updateKeySectionVisibility();
+      populateTemplateDropdown();
       updateTemplatesButtonText();
       renderTemplatePreview(selectedTemplate);
+      renderCustomTemplatesList();
 
       generateSection.style.display = 'block';
 
@@ -442,95 +728,173 @@ templatesBtn.addEventListener('click', () => {
     generateSection.style.display = 'none';
     templatesBtn.innerHTML = '🔼 Close Templates';
 
-    renderTemplatePreview(selectedTemplate);
+    // Reset to show template selection view
+    customTemplatesSection.style.display = 'none';
+    customTemplateCreator.style.display = 'none';
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
 
-    if (selectedTemplate === 'custom') {
-      customTemplateEditor.style.display = 'block';
-      customFieldsList.innerHTML = '';
-      customTemplate.mandatory.forEach(field => {
-        customFieldsList.appendChild(createCustomFieldItem(field, true));
-      });
-      customTemplate.optional.forEach(field => {
-        customFieldsList.appendChild(createCustomFieldItem(field, false));
-      });
-    } else {
-      customTemplateEditor.style.display = 'none';
-    }
+    // Initialize temporary selection with current selection
+    tempSelectedTemplate = selectedTemplate;
+
+    renderTemplatePreview(selectedTemplate);
+    renderCustomTemplatesList();
+    populateTemplateDropdown();
   } else {
     templatesSection.style.display = 'none';
     generateSection.style.display = 'block';
     updateTemplatesButtonText();
+
+    // Reset all views
+    customTemplatesSection.style.display = 'none';
+    customTemplateCreator.style.display = 'none';
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
+
+    // Reset temp selection to actual selection
+    tempSelectedTemplate = selectedTemplate;
   }
 
   setStatus('');
 });
 
+// Template dropdown change - just update preview, don't save yet
 templateDropdown.addEventListener('change', () => {
-  const newTemplate = templateDropdown.value;
-  selectedTemplate = newTemplate;
+  const selectedValue = templateDropdown.value;
 
-  renderTemplatePreview(selectedTemplate);
-
-  if (selectedTemplate === 'custom') {
-    customTemplateEditor.style.display = 'block';
-    customFieldsList.innerHTML = '';
-    customTemplate.mandatory.forEach(field => {
-      customFieldsList.appendChild(createCustomFieldItem(field, true));
-    });
-    customTemplate.optional.forEach(field => {
-      customFieldsList.appendChild(createCustomFieldItem(field, false));
-    });
-  } else {
-    customTemplateEditor.style.display = 'none';
-  }
-});
-
-addMandatoryFieldBtn.addEventListener('click', () => {
-  const item = createCustomFieldItem('', true);
-  customFieldsList.appendChild(item);
-  item.querySelector('input').focus();
-});
-
-addOptionalFieldBtn.addEventListener('click', () => {
-  const item = createCustomFieldItem('', false);
-  customFieldsList.appendChild(item);
-  item.querySelector('input').focus();
-});
-
-saveTemplateBtn.addEventListener('click', () => {
-  if (selectedTemplate === 'custom') {
-    const mandatory = [];
-    const optional = [];
-    const inputs = customFieldsList.querySelectorAll('input');
-
-    inputs.forEach(input => {
-      const fieldName = input.value.trim();
-      if (fieldName) {
-        if (input.dataset.mandatory === 'true') {
-          mandatory.push(fieldName);
-        } else {
-          optional.push(fieldName);
-        }
-      }
-    });
-
-    if (mandatory.length === 0) {
-      setStatus('At least one mandatory field is required', 'red');
-      return;
-    }
-
-    customTemplate = { mandatory, optional };
+  if (selectedValue === '__custom_section__') {
+    // User clicked "Manage Custom Templates..." - show the custom section
+    templatePreview.style.display = 'none';
+    customTemplatesSection.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'none';
+    renderCustomTemplatesList();
+    return;
   }
 
-  chrome.storage.local.set({
-    selectedTemplate: selectedTemplate,
-    customTemplate: customTemplate
-  }, () => {
+  // Update temporary selection and preview (don't save yet)
+  tempSelectedTemplate = selectedValue;
+  renderTemplatePreview(tempSelectedTemplate);
+  setStatus('Preview updated. Click "Save & Close" to apply.', '#1a73e8');
+  console.log('Template preview:', tempSelectedTemplate);
+});
+
+// Save template selection button
+saveTemplateSelectionBtn.addEventListener('click', () => {
+  // Save the temporary selection as the actual selection
+  selectedTemplate = tempSelectedTemplate;
+
+  chrome.storage.local.set({ selectedTemplate: selectedTemplate }, () => {
+    // Close the panel
     templatesSection.style.display = 'none';
     generateSection.style.display = 'block';
     updateTemplatesButtonText();
+
+    // Reset views
+    customTemplatesSection.style.display = 'none';
+    customTemplateCreator.style.display = 'none';
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
+
     setStatus('Template saved!', 'green');
-    console.log('Template saved:', selectedTemplate, customTemplate);
+    console.log('Template saved:', selectedTemplate);
+  });
+});
+
+backToSelectionBtn.addEventListener('click', () => {
+  customTemplatesSection.style.display = 'none';
+  customTemplateCreator.style.display = 'none';
+  createTemplateBtn.style.display = 'block';
+  templatePreview.style.display = 'block';
+  saveTemplateSelectionBtn.style.display = 'block';
+
+  // Reset to current saved selection
+  tempSelectedTemplate = selectedTemplate;
+  populateTemplateDropdown();
+  renderTemplatePreview(selectedTemplate);
+  setStatus('');
+});
+
+createTemplateBtn.addEventListener('click', () => {
+  editingTemplateId = null;
+  creatorTitle.textContent = 'Create New Template';
+  templateNameInput.value = '';
+  templateFieldsInput.value = '';
+
+  // Reset character counter
+  nameCharCount.textContent = '(0/30)';
+  nameCharCount.style.color = '#ff9800'; // Orange for warning (needs at least 3 chars)
+
+  customTemplatesSection.style.display = 'none';
+  customTemplateCreator.style.display = 'block';
+});
+
+cancelTemplateBtn.addEventListener('click', () => {
+  customTemplateCreator.style.display = 'none';
+  customTemplatesSection.style.display = 'block';
+  editingTemplateId = null;
+  setStatus('');
+});
+
+saveNewTemplateBtn.addEventListener('click', () => {
+  const name = templateNameInput.value.trim();
+  const fieldsText = templateFieldsInput.value;
+
+  if (!name) {
+    setStatus('Template name is required', 'red');
+    return;
+  }
+
+  if (name.length > 30) {
+    setStatus('Template name must be 30 characters or less', 'red');
+    return;
+  }
+
+  if (name.length < 3) {
+    setStatus('Template name must be at least 3 characters', 'red');
+    return;
+  }
+
+  const { mandatory, optional } = parseTemplateFields(fieldsText);
+
+  if (mandatory.length === 0 && optional.length === 0) {
+    setStatus('At least one field is required', 'red');
+    return;
+  }
+
+  // Generate template ID
+  const templateId = editingTemplateId || `custom_${Date.now()}`;
+
+  customTemplates[templateId] = {
+    name: name,
+    mandatory: mandatory,
+    optional: optional
+  };
+
+  // Auto-select the newly created/edited template
+  selectedTemplate = templateId;
+  tempSelectedTemplate = templateId;
+
+  chrome.storage.local.set({
+    customTemplates: customTemplates,
+    selectedTemplate: selectedTemplate
+  }, () => {
+    customTemplateCreator.style.display = 'none';
+
+    // Show template selection view with new template selected
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
+    customTemplatesSection.style.display = 'none';
+
+    renderCustomTemplatesList();
+    populateTemplateDropdown(); // This will now include the new template
+    renderTemplatePreview(selectedTemplate);
+    updateTemplatesButtonText();
+
+    const action = editingTemplateId ? 'updated' : 'created';
+    setStatus(`Template ${action}! Click "Save & Close" to apply.`, '#1a73e8');
+    console.log(`Template ${action}:`, templateId, customTemplates[templateId]);
+
+    editingTemplateId = null;
   });
 });
 
@@ -590,7 +954,7 @@ generateBtn.addEventListener('click', () => {
             }
 
             // Get the active template
-            const activeTemplate = selectedTemplate === 'custom' ? customTemplate : templates[selectedTemplate];
+            const activeTemplate = getActiveTemplate();
 
             chrome.scripting.executeScript({
               target: { tabId: tab.id },
