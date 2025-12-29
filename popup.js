@@ -16,11 +16,22 @@ const modelList = document.getElementById('modelList');
 const dropdown = document.querySelector('.dropdown');
 const openaiKeySection = document.getElementById('openaiKeySection');
 const geminiKeySection = document.getElementById('geminiKeySection');
-const customValuesBtn = document.getElementById('customValuesBtn');
-const customValuesSection = document.getElementById('customValuesSection');
-const addCustomValueBtn = document.getElementById('addCustomValueBtn');
-const saveCustomValuesBtn = document.getElementById('saveCustomValuesBtn');
-const customValuesList = document.getElementById('customValuesList');
+const templatesBtn = document.getElementById('templatesBtn');
+const templatesSection = document.getElementById('templatesSection');
+const templateDropdown = document.getElementById('templateDropdown');
+const templatePreview = document.getElementById('templatePreview');
+const customTemplatesSection = document.getElementById('customTemplatesSection');
+const customTemplateCreator = document.getElementById('customTemplateCreator');
+const createTemplateBtn = document.getElementById('createTemplateBtn');
+const templateNameInput = document.getElementById('templateNameInput');
+const templateFieldsInput = document.getElementById('templateFieldsInput');
+const saveNewTemplateBtn = document.getElementById('saveNewTemplateBtn');
+const cancelTemplateBtn = document.getElementById('cancelTemplateBtn');
+const customTemplatesContainer = document.getElementById('customTemplatesContainer');
+const creatorTitle = document.getElementById('creatorTitle');
+const backToSelectionBtn = document.getElementById('backToSelectionBtn');
+const saveTemplateSelectionBtn = document.getElementById('saveTemplateSelectionBtn');
+const nameCharCount = document.getElementById('nameCharCount');
 
 let openaiKey = '';
 let geminiKey = '';
@@ -30,10 +41,26 @@ let showOpenaiKey = false;
 let showGeminiKey = false;
 let tempOpenaiKey = '';
 let tempGeminiKey = '';
-let customValues = [];
-let tempCustomValues = [];
+let selectedTemplate = 'default';
+let tempSelectedTemplate = 'default'; // Temporary selection before saving
+let customTemplates = {}; // { templateId: { name, mandatory: [], optional: [] } }
+let editingTemplateId = null;
 let statusTimeout = null;
-let isGenerating = false; // Flag to prevent multiple generations
+let isGenerating = false;
+
+// Define built-in templates
+const templates = {
+  default: {
+    name: 'Default (Comprehensive)',
+    mandatory: ['Purpose', 'Key Files Changed', 'Summary of Changes', 'Notes'],
+    optional: ['Approach', 'Bug Fixes', 'Refactoring', 'Chores', 'Testing']
+  },
+  minimal: {
+    name: 'Minimal (Quick)',
+    mandatory: ['Summary', 'Changes'],
+    optional: ['Screenshots', 'Checklist']
+  }
+};
 
 function getMaskedKey(key) {
   return '•'.repeat(key.length);
@@ -49,201 +76,358 @@ function updateSelectedModelUI(model, provider) {
   });
 }
 
-function updateCustomValuesButtonText() {
-  const count = customValues.length;
-  if (count === 0) {
-    customValuesBtn.innerHTML = '⚙️ Custom Prompt Values';
+function updateTemplatesButtonText() {
+  // Don't update button text if the panel is currently open
+  if (templatesSection.style.display === 'block') {
+    return;
+  }
+
+  let templateName;
+  if (templates[selectedTemplate]) {
+    templateName = templates[selectedTemplate].name;
+  } else if (customTemplates[selectedTemplate]) {
+    templateName = customTemplates[selectedTemplate].name;
   } else {
-    customValuesBtn.innerHTML = `⚙️ Custom Values (${count})`;
+    templateName = 'Default';
+  }
+  templatesBtn.innerHTML = `📋 Template: ${templateName}`;
+}
+
+function getActiveTemplate() {
+  return templates[selectedTemplate] || customTemplates[selectedTemplate] || templates.default;
+}
+
+function renderTemplatePreview(templateId) {
+  const template = templates[templateId] || customTemplates[templateId];
+  if (!template) return;
+
+  const fieldsDiv = templatePreview.querySelector('.template-fields');
+  fieldsDiv.innerHTML = '';
+
+  if (template.mandatory && template.mandatory.length > 0) {
+    const mandatorySection = document.createElement('div');
+    mandatorySection.style.marginBottom = '15px';
+    mandatorySection.innerHTML = '<strong style="color: var(--primary)">** Mandatory Fields:</strong>';
+    const mandatoryList = document.createElement('ul');
+    mandatoryList.style.marginLeft = '20px';
+    mandatoryList.style.marginTop = '5px';
+    template.mandatory.forEach(field => {
+      const li = document.createElement('li');
+      li.textContent = field;
+      mandatoryList.appendChild(li);
+    });
+    mandatorySection.appendChild(mandatoryList);
+    fieldsDiv.appendChild(mandatorySection);
+  }
+
+  if (template.optional && template.optional.length > 0) {
+    const optionalSection = document.createElement('div');
+    optionalSection.innerHTML = '<strong style="color: var(--secondary);"># Optional Fields:</strong>';
+    const optionalList = document.createElement('ul');
+    optionalList.style.marginLeft = '20px';
+    optionalList.style.marginTop = '5px';
+    optionalList.style.opacity = '0.8';
+    template.optional.forEach(field => {
+      const li = document.createElement('li');
+      li.textContent = field;
+      optionalList.appendChild(li);
+    });
+    optionalSection.appendChild(optionalList);
+    fieldsDiv.appendChild(optionalSection);
+  }
+}
+
+function parseTemplateFields(text) {
+  const lines = text.split('\n').filter(line => line.trim());
+  const mandatory = [];
+  const optional = [];
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('**')) {
+      const fieldName = trimmed.substring(2).trim();
+      if (fieldName) mandatory.push(fieldName);
+    } else if (trimmed.startsWith('#')) {
+      const fieldName = trimmed.substring(1).trim();
+      if (fieldName) optional.push(fieldName);
+    }
+  });
+
+  return { mandatory, optional };
+}
+
+function renderCustomTemplatesList() {
+  customTemplatesContainer.innerHTML = '';
+
+  const customIds = Object.keys(customTemplates);
+  if (customIds.length === 0) {
+    customTemplatesContainer.innerHTML = '<p style="opacity: 0.6; font-size: 13px; text-align: center; padding: 20px">No custom templates yet. Create one to get started!</p>';
+    return;
+  }
+
+  customIds.forEach(templateId => {
+    const template = customTemplates[templateId];
+    const item = document.createElement('div');
+    const isActive = selectedTemplate === templateId;
+
+    // Main card container with vertical layout
+    item.style.cssText = `
+      display: flex; 
+      flex-direction: column;
+      gap: 12px; 
+      padding: 16px; 
+      background: var(--bg); 
+      border-radius: 8px; 
+      border: 2px solid ${isActive ? 'var(--primary)' : 'var(--border-color)'}; 
+      cursor: pointer; 
+      transition: all 0.2s;
+    `;
+
+    // Make the whole card clickable to select the template
+    item.onclick = (e) => {
+      // Don't select if clicking edit or delete buttons
+      if (e.target.tagName === 'BUTTON') return;
+      selectCustomTemplate(templateId);
+    };
+
+    item.onmouseenter = () => {
+      if (!isActive) {
+        item.style.borderColor = 'var(--primary)';
+        item.style.opacity = '0.8';
+      }
+    };
+
+    item.onmouseleave = () => {
+      if (!isActive) {
+        item.style.borderColor = 'var(--border-color)';
+        item.style.opacity = '1';
+      }
+    };
+
+    // Top row: Name + Active label
+    const topRow = document.createElement('div');
+    topRow.style.cssText = 'display: flex; align-items: center; gap: 10px; justify-content: space-between;';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = template.name;
+    nameSpan.style.cssText = `
+      font-weight: 600; 
+      font-size: 15px;
+      word-wrap: break-word; 
+      word-break: break-word; 
+      overflow-wrap: break-word; 
+      flex: 1;
+      ${isActive ? 'color: var(--primary)' : ''}
+    `;
+
+    topRow.appendChild(nameSpan);
+
+    if (isActive) {
+      const activeLabel = document.createElement('span');
+      activeLabel.textContent = '✓ Active';
+      activeLabel.style.cssText = `
+        font-size: 11px; 
+        color: white;
+        background: var(--primary);
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-weight: 600; 
+        white-space: nowrap;
+      `;
+      topRow.appendChild(activeLabel);
+    }
+
+    // Bottom row: Edit and Delete buttons
+    const buttonRow = document.createElement('div');
+    buttonRow.style.cssText = 'display: flex; gap: 8px;';
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✏️ Edit';
+    editBtn.style.cssText = `
+      flex: 1;
+      padding: 8px 12px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      background: var(--primary); 
+      color: white; 
+      border: none; 
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    `;
+    editBtn.onclick = (e) => {
+      e.stopPropagation();
+      editTemplate(templateId);
+    };
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '🗑️ Delete';
+    deleteBtn.style.cssText = `
+      flex: 1;
+      padding: 8px 12px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      background: var(--error-color); 
+      color: white; 
+      border: none; 
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    `;
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
+      deleteTemplate(templateId);
+    };
+
+    buttonRow.appendChild(editBtn);
+    buttonRow.appendChild(deleteBtn);
+
+    // Assemble the card
+    item.appendChild(topRow);
+    item.appendChild(buttonRow);
+    customTemplatesContainer.appendChild(item);
+  });
+}
+
+function selectCustomTemplate(templateId) {
+  // Update temporary selection (don't save yet)
+  tempSelectedTemplate = templateId;
+  selectedTemplate = templateId;
+
+  chrome.storage.local.set({ selectedTemplate: selectedTemplate }, () => {
+    // Switch back to main template view
+    customTemplatesSection.style.display = 'none';
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
+
+    renderCustomTemplatesList();
+    populateTemplateDropdown();
+    renderTemplatePreview(templateId);
+    setStatus(`Template "${customTemplates[templateId].name}" selected! Click "Save & Close" to apply.`, '#1a73e8');
+  });
+}
+
+function populateTemplateDropdown() {
+  // Clear all options
+  templateDropdown.innerHTML = '';
+
+  // Add built-in templates
+  const defaultOption = document.createElement('option');
+  defaultOption.value = 'default';
+  defaultOption.textContent = '🎯 Default (Comprehensive)';
+  templateDropdown.appendChild(defaultOption);
+
+  const minimalOption = document.createElement('option');
+  minimalOption.value = 'minimal';
+  minimalOption.textContent = '⚡ Minimal (Quick)';
+  templateDropdown.appendChild(minimalOption);
+
+  // Add custom templates if any exist
+  const customIds = Object.keys(customTemplates);
+  if (customIds.length > 0) {
+    const separator1 = document.createElement('option');
+    separator1.disabled = true;
+    separator1.textContent = '── Custom Templates ──';
+    templateDropdown.appendChild(separator1);
+
+    customIds.forEach(templateId => {
+      const option = document.createElement('option');
+      option.value = templateId;
+      option.textContent = `✏️ ${customTemplates[templateId].name}`;
+      templateDropdown.appendChild(option);
+    });
+  }
+
+  // Add separator and manage option
+  const separator2 = document.createElement('option');
+  separator2.disabled = true;
+  separator2.textContent = '──────────────';
+  templateDropdown.appendChild(separator2);
+
+  const manageOption = document.createElement('option');
+  manageOption.value = '__custom_section__';
+  manageOption.textContent = '✏️ Manage Custom Templates...';
+  templateDropdown.appendChild(manageOption);
+
+  // Set current selection (use tempSelectedTemplate when panel is open, otherwise use selectedTemplate)
+  const currentSelection = templatesSection.style.display === 'block' ? tempSelectedTemplate : selectedTemplate;
+  if (templates[currentSelection] || customTemplates[currentSelection]) {
+    templateDropdown.value = currentSelection;
+  } else {
+    templateDropdown.value = 'default';
+  }
+}
+
+function editTemplate(templateId) {
+  editingTemplateId = templateId;
+  const template = customTemplates[templateId];
+
+  creatorTitle.textContent = 'Edit Template';
+  templateNameInput.value = template.name;
+
+  // Update character counter
+  const length = template.name.length;
+  nameCharCount.textContent = `(${length}/30)`;
+  if (length > 30) {
+    nameCharCount.style.color = 'var(--error-color)';
+  } else if (length < 3) {
+    nameCharCount.style.color = '#ff9800';
+  } else {
+    nameCharCount.style.color = 'var(--primary)';
+  }
+
+  // Convert template fields back to text format
+  const fieldsText = [
+    ...template.mandatory.map(f => `**${f}`),
+    ...template.optional.map(f => `#${f}`)
+  ].join('\n');
+
+  templateFieldsInput.value = fieldsText;
+
+  customTemplatesSection.style.display = 'none';
+  customTemplateCreator.style.display = 'block';
+}
+
+function deleteTemplate(templateId) {
+  if (confirm(`Delete template "${customTemplates[templateId].name}"?`)) {
+    delete customTemplates[templateId];
+
+    // If deleted template was selected, switch to default
+    if (selectedTemplate === templateId) {
+      selectedTemplate = 'default';
+      chrome.storage.local.set({ selectedTemplate: 'default' });
+    }
+
+    chrome.storage.local.set({ customTemplates: customTemplates }, () => {
+      renderCustomTemplatesList();
+      populateTemplateDropdown();
+      updateTemplatesButtonText();
+      renderTemplatePreview(selectedTemplate);
+      setStatus('Template deleted!', 'green');
+    });
   }
 }
 
 function updateKeySectionVisibility() {
-  // When key panel is closed, hide both sections
   if (apiSection.style.display === 'none') {
     openaiKeySection.classList.add('hidden');
     geminiKeySection.classList.add('hidden');
     return;
   }
 
-  // When key panel is open, show both sections
   openaiKeySection.classList.remove('hidden');
   geminiKeySection.classList.remove('hidden');
 
-  // Reset opacity and border for both sections
   openaiKeySection.style.opacity = '1';
   openaiKeySection.style.borderColor = 'var(--border-color)';
   geminiKeySection.style.opacity = '1';
   geminiKeySection.style.borderColor = 'var(--border-color)';
-}
-
-function createCustomValueItem(key = '', value = '') {
-  const item = document.createElement('div');
-  item.className = 'custom-value-item';
-
-  // Create contenteditable key header
-  const keyHeader = document.createElement('div');
-  keyHeader.contentEditable = true;
-  keyHeader.textContent = key || 'Enter key name here';
-  keyHeader.className = 'key-header';
-
-  // Create label for value
-  const valueLabel = document.createElement('label');
-  valueLabel.textContent = 'Description of key:';
-  valueLabel.className = 'value-label';
-
-  // Create value input
-  const valueInput = document.createElement('input');
-  valueInput.type = 'text';
-  valueInput.placeholder = 'Enter description here';
-  valueInput.className = 'value-input';
-  valueInput.value = value;
-  valueInput.id = `description-${Date.now()}-${Math.random()}`;
-  valueLabel.htmlFor = valueInput.id;
-
-  // Create remove button with text and icon
-  const removeBtn = document.createElement('button');
-  removeBtn.className = 'remove-btn';
-  removeBtn.innerHTML = '🗑️ Remove Custom Property';
-  removeBtn.onclick = () => item.remove();
-
-  // Clear validation errors when input changes
-  const clearValidation = () => {
-    valueInput.style.borderColor = '';
-  };
-
-  valueInput.addEventListener('input', clearValidation);
-
-  // Update key header when it changes
-  keyHeader.addEventListener('input', () => {
-    const currentText = keyHeader.textContent;
-
-    // If completely empty, set default text
-    if (!currentText.trim()) {
-      keyHeader.textContent = 'Enter key name here';
-      return;
-    }
-
-    // If the text contains the default text, remove it and keep only user input
-    if (currentText.includes('Enter key name here')) {
-      const userInput = currentText.replace('Enter key name here', '').trim();
-      if (userInput) {
-        // Save cursor position before replacing text
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        const cursorOffset = range.startOffset;
-
-        // Replace the text
-        keyHeader.textContent = userInput;
-
-        // Restore cursor position at the end of the text
-        const newRange = document.createRange();
-        newRange.selectNodeContents(keyHeader);
-        newRange.collapse(false); // false = collapse to end
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      } else {
-        keyHeader.textContent = 'Enter key name here';
-        return;
-      }
-    }
-
-    // Limit to 15 words max
-    const words = currentText.trim().split(/\s+/);
-    if (words.length > 15) {
-      // Take first 15 words and add line breaks every 5 words for readability
-      const limitedWords = words.slice(0, 15);
-      const lines = [];
-      for (let i = 0; i < limitedWords.length; i += 5) {
-        lines.push(limitedWords.slice(i, i + 5).join(' '));
-      }
-      keyHeader.textContent = lines.join('\n');
-    }
-  });
-
-  // Auto-remove empty items when they lose focus
-  keyHeader.addEventListener('blur', () => {
-    const key = keyHeader.textContent.trim();
-    const valueInput = item.querySelector('.value-input');
-    const value = valueInput.value.trim();
-
-    // If both key and value are empty/default, remove the item
-    if ((!key || key === 'Enter key name here') && !value) {
-      item.remove();
-    }
-  });
-
-  valueInput.addEventListener('blur', () => {
-    const key = keyHeader.textContent.trim();
-    const value = valueInput.value.trim();
-
-    // If both key and value are empty/default, remove the item
-    if ((!key || key === 'Enter key name here') && !value) {
-      item.remove();
-    }
-  });
-
-  // Add elements directly to item
-  item.appendChild(keyHeader);
-  item.appendChild(valueLabel);
-  item.appendChild(valueInput);
-  item.appendChild(removeBtn);
-
-  return item;
-}
-
-function saveCustomValues() {
-  tempCustomValues = [];
-  const errors = [];
-
-  // Get all custom value items from the DOM
-  const items = customValuesList.querySelectorAll('.custom-value-item');
-
-  items.forEach((item, index) => {
-    const keyHeader = item.querySelector('.key-header');
-    const valueInput = item.querySelector('.value-input');
-    const key = keyHeader.textContent.trim();
-    const value = valueInput.value.trim();
-
-    // Check if key is empty or just the default text
-    if (!key || key === 'Enter key name here') {
-      // Remove completely empty items or items with default text
-      if (!value) {
-        item.remove(); // Remove the empty item from UI
-        return;
-      } else {
-        // Has value but no valid key
-        errors.push(`Row ${index + 1}: Key is required when value is provided`);
-        keyHeader.style.borderColor = 'var(--error-color)';
-        return;
-      }
-    }
-
-    // Allow blank values for valid keys
-    if (key && !value) {
-      // Valid key with empty value - this is allowed
-    }
-
-    if (tempCustomValues.some(existing => existing.key === key)) {
-      errors.push(`Duplicate key: "${key}"`);
-      keyHeader.style.borderColor = 'var(--error-color)';
-      return;
-    }
-
-    // Reset border color if valid
-    keyHeader.style.borderColor = '';
-    valueInput.style.borderColor = '';
-
-    // Add the key-value pair (value can be empty)
-    tempCustomValues.push({ key, value: value || '' });
-  });
-
-  if (errors.length > 0) {
-    setStatus(`Validation errors: ${errors.join(', ')}`, 'red');
-    return null;
-  }
-
-  return tempCustomValues;
 }
 
 function getCurrentKey() {
@@ -286,6 +470,20 @@ modelList.addEventListener('click', e => {
   }
 });
 
+// Character counter for template name
+templateNameInput.addEventListener('input', () => {
+  const length = templateNameInput.value.length;
+  nameCharCount.textContent = `(${length}/30)`;
+
+  if (length > 30) {
+    nameCharCount.style.color = 'var(--error-color)';
+  } else if (length < 3) {
+    nameCharCount.style.color = '#ff9800'; // Orange for warning
+  } else {
+    nameCharCount.style.color = 'var(--primary)';
+  }
+});
+
 window.onload = () => {
   console.log('Popup loaded.');
   chrome.storage.local.get(
@@ -295,7 +493,8 @@ window.onload = () => {
       'selectedModel',
       'selectedProvider',
       'theme',
-      'customValues',
+      'selectedTemplate',
+      'customTemplates',
     ],
     data => {
       if (data.openaiKey) {
@@ -314,13 +513,16 @@ window.onload = () => {
         geminiKeyInput.value = '';
       }
 
-      if (data.customValues) {
-        customValues = data.customValues;
-        tempCustomValues = [...customValues];
+      if (data.selectedTemplate) {
+        selectedTemplate = data.selectedTemplate;
       } else {
-        // Start with empty custom values
-        customValues = [];
-        tempCustomValues = [];
+        selectedTemplate = 'default';
+      }
+
+      if (data.customTemplates) {
+        customTemplates = data.customTemplates;
+      } else {
+        customTemplates = {};
       }
 
       console.log('Stored data loaded:', data);
@@ -339,9 +541,11 @@ window.onload = () => {
 
       updateSelectedModelUI(selectedModel, selectedProvider);
       updateKeySectionVisibility();
-      updateCustomValuesButtonText();
+      populateTemplateDropdown();
+      updateTemplatesButtonText();
+      renderTemplatePreview(selectedTemplate);
+      renderCustomTemplatesList();
 
-      // Ensure generate section is visible on load
       generateSection.style.display = 'block';
 
       console.log(
@@ -515,60 +719,182 @@ saveKeyBtn.addEventListener('click', () => {
   });
 });
 
-// Custom values functionality
-customValuesBtn.addEventListener('click', () => {
-  const isPanelOpen = customValuesSection.style.display === 'block';
+// Templates functionality
+templatesBtn.addEventListener('click', () => {
+  const isPanelOpen = templatesSection.style.display === 'block';
 
   if (!isPanelOpen) {
-    customValuesSection.style.display = 'block';
+    templatesSection.style.display = 'block';
     generateSection.style.display = 'none';
-    customValuesBtn.innerHTML = '🔼 Close Custom Values';
+    templatesBtn.innerHTML = '🔼 Close Templates';
 
-    // Initialize temp values with current values
-    tempCustomValues = [...customValues];
+    // Reset to show template selection view
+    customTemplatesSection.style.display = 'none';
+    customTemplateCreator.style.display = 'none';
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
 
-    // Populate the DOM with existing custom values
-    customValuesList.innerHTML = '';
-    customValues.forEach(cv => {
-      const item = createCustomValueItem(cv.key, cv.value);
-      customValuesList.appendChild(item);
-    });
+    // Initialize temporary selection with current selection
+    tempSelectedTemplate = selectedTemplate;
+
+    renderTemplatePreview(selectedTemplate);
+    renderCustomTemplatesList();
+    populateTemplateDropdown();
   } else {
-    customValuesSection.style.display = 'none';
+    templatesSection.style.display = 'none';
     generateSection.style.display = 'block';
-    updateCustomValuesButtonText();
+    updateTemplatesButtonText();
+
+    // Reset all views
+    customTemplatesSection.style.display = 'none';
+    customTemplateCreator.style.display = 'none';
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
+
+    // Reset temp selection to actual selection
+    tempSelectedTemplate = selectedTemplate;
   }
 
   setStatus('');
 });
 
-addCustomValueBtn.addEventListener('click', () => {
-  const item = createCustomValueItem();
-  customValuesList.appendChild(item);
-});
+// Template dropdown change - just update preview, don't save yet
+templateDropdown.addEventListener('change', () => {
+  const selectedValue = templateDropdown.value;
 
-saveCustomValuesBtn.addEventListener('click', () => {
-  const newCustomValues = saveCustomValues();
-
-  if (newCustomValues === null) {
-    // Validation failed
+  if (selectedValue === '__custom_section__') {
+    // User clicked "Manage Custom Templates..." - show the custom section
+    templatePreview.style.display = 'none';
+    customTemplatesSection.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'none';
+    renderCustomTemplatesList();
     return;
   }
 
-  // Allow saving even with no custom values
-  if (newCustomValues.length === 0) {
-    setStatus('No custom values added', 'blue');
+  // Update temporary selection and preview (don't save yet)
+  tempSelectedTemplate = selectedValue;
+  renderTemplatePreview(tempSelectedTemplate);
+  setStatus('Preview updated. Click "Save & Close" to apply.', '#1a73e8');
+  console.log('Template preview:', tempSelectedTemplate);
+});
+
+// Save template selection button
+saveTemplateSelectionBtn.addEventListener('click', () => {
+  // Save the temporary selection as the actual selection
+  selectedTemplate = tempSelectedTemplate;
+
+  chrome.storage.local.set({ selectedTemplate: selectedTemplate }, () => {
+    // Close the panel
+    templatesSection.style.display = 'none';
+    generateSection.style.display = 'block';
+    updateTemplatesButtonText();
+
+    // Reset views
+    customTemplatesSection.style.display = 'none';
+    customTemplateCreator.style.display = 'none';
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
+
+    setStatus('Template saved!', 'green');
+    console.log('Template saved:', selectedTemplate);
+  });
+});
+
+backToSelectionBtn.addEventListener('click', () => {
+  customTemplatesSection.style.display = 'none';
+  customTemplateCreator.style.display = 'none';
+  createTemplateBtn.style.display = 'block';
+  templatePreview.style.display = 'block';
+  saveTemplateSelectionBtn.style.display = 'block';
+
+  // Reset to current saved selection
+  tempSelectedTemplate = selectedTemplate;
+  populateTemplateDropdown();
+  renderTemplatePreview(selectedTemplate);
+  setStatus('');
+});
+
+createTemplateBtn.addEventListener('click', () => {
+  editingTemplateId = null;
+  creatorTitle.textContent = 'Create New Template';
+  templateNameInput.value = '';
+  templateFieldsInput.value = '';
+
+  // Reset character counter
+  nameCharCount.textContent = '(0/30)';
+  nameCharCount.style.color = '#ff9800'; // Orange for warning (needs at least 3 chars)
+
+  customTemplatesSection.style.display = 'none';
+  customTemplateCreator.style.display = 'block';
+});
+
+cancelTemplateBtn.addEventListener('click', () => {
+  customTemplateCreator.style.display = 'none';
+  customTemplatesSection.style.display = 'block';
+  editingTemplateId = null;
+  setStatus('');
+});
+
+saveNewTemplateBtn.addEventListener('click', () => {
+  const name = templateNameInput.value.trim();
+  const fieldsText = templateFieldsInput.value;
+
+  if (!name) {
+    setStatus('Template name is required', 'red');
+    return;
   }
 
-  customValues = [...newCustomValues];
+  if (name.length > 30) {
+    setStatus('Template name must be 30 characters or less', 'red');
+    return;
+  }
 
-  chrome.storage.local.set({ customValues: customValues }, () => {
-    customValuesSection.style.display = 'none';
-    generateSection.style.display = 'block';
-    updateCustomValuesButtonText();
+  if (name.length < 3) {
+    setStatus('Template name must be at least 3 characters', 'red');
+    return;
+  }
 
-    setStatus('Custom values saved!', 'green');
-    console.log('Custom values saved:', customValues);
+  const { mandatory, optional } = parseTemplateFields(fieldsText);
+
+  if (mandatory.length === 0 && optional.length === 0) {
+    setStatus('At least one field is required', 'red');
+    return;
+  }
+
+  // Generate template ID
+  const templateId = editingTemplateId || `custom_${Date.now()}`;
+
+  customTemplates[templateId] = {
+    name: name,
+    mandatory: mandatory,
+    optional: optional
+  };
+
+  // Auto-select the newly created/edited template
+  selectedTemplate = templateId;
+  tempSelectedTemplate = templateId;
+
+  chrome.storage.local.set({
+    customTemplates: customTemplates,
+    selectedTemplate: selectedTemplate
+  }, () => {
+    customTemplateCreator.style.display = 'none';
+
+    // Show template selection view with new template selected
+    templatePreview.style.display = 'block';
+    saveTemplateSelectionBtn.style.display = 'block';
+    customTemplatesSection.style.display = 'none';
+
+    renderCustomTemplatesList();
+    populateTemplateDropdown(); // This will now include the new template
+    renderTemplatePreview(selectedTemplate);
+    updateTemplatesButtonText();
+
+    const action = editingTemplateId ? 'updated' : 'created';
+    setStatus(`Template ${action}! Click "Save & Close" to apply.`, '#1a73e8');
+    console.log(`Template ${action}:`, templateId, customTemplates[templateId]);
+
+    editingTemplateId = null;
   });
 });
 
@@ -579,16 +905,13 @@ generateBtn.addEventListener('click', () => {
     return;
   }
 
-  // Prevent multiple generations
   if (isGenerating) {
     console.log('Generation already in progress, ignoring click.');
     return;
   }
 
-  // Set generating flag
   isGenerating = true;
 
-  // Disable the button to prevent repetitive clicks
   generateBtn.disabled = true;
   generateBtn.textContent = '⏳ Generating...';
   generateBtn.style.opacity = '0.6';
@@ -598,19 +921,16 @@ generateBtn.addEventListener('click', () => {
     setStatus('⏳ Sending request...');
     console.log(`Injecting content script into tab ${tab.id}.`);
 
-    // Force-inject content.js before sending event
     chrome.scripting.executeScript(
       {
         target: { tabId: tab.id },
         files: ['content.js'],
       },
       () => {
-        // Check if content script is already loaded to prevent duplicate listeners
         chrome.scripting.executeScript(
           {
             target: { tabId: tab.id },
             func: () => {
-              // Check if we already have a listener for this request
               if (window.isProcessingPRRequest) {
                 console.log(
                   'Content script already processing a request, skipping injection.'
@@ -633,29 +953,17 @@ generateBtn.addEventListener('click', () => {
               return;
             }
 
-            // Prepare custom values - only use user-provided values
-            let finalCustomValues = [];
+            // Get the active template
+            const activeTemplate = getActiveTemplate();
 
-            // Filter out completely empty entries
-            if (customValues && customValues.length > 0) {
-              console.log('Original custom values:', customValues);
-              finalCustomValues = customValues.filter(
-                cv => cv.key.trim() && cv.value.trim()
-              );
-              console.log('Filtered custom values:', finalCustomValues);
-            } else {
-              console.log('No custom values found in storage');
-            }
-
-            // Dispatch custom event once content script is loaded
             chrome.scripting.executeScript({
               target: { tabId: tab.id },
-              func: (key, model, provider, customVals) => {
+              func: (key, model, provider, template) => {
                 console.log('Content script received:', {
                   key: key ? '***' + key.slice(-4) : 'empty',
                   model,
                   provider,
-                  customVals,
+                  template,
                 });
                 window.dispatchEvent(
                   new CustomEvent('ai-pr-gen', {
@@ -663,7 +971,7 @@ generateBtn.addEventListener('click', () => {
                       apiKey: key,
                       model: model,
                       provider: provider,
-                      customValues: customVals,
+                      template: template,
                     },
                   })
                 );
@@ -672,17 +980,15 @@ generateBtn.addEventListener('click', () => {
                 getCurrentKey(),
                 selectedModel,
                 selectedProvider,
-                finalCustomValues,
+                activeTemplate,
               ],
             });
 
-            // Start 10s timeout to auto-reload if stuck
             statusTimeout = setTimeout(() => {
               console.warn('No response from content script. Reloading tab.');
               chrome.tabs.reload(tab.id);
-              // Re-enable button on timeout
               enableGenerateButton();
-              isGenerating = false; // Reset the flag on timeout
+              isGenerating = false;
             }, 10000);
           }
         );
@@ -722,5 +1028,5 @@ function enableGenerateButton() {
   generateBtn.textContent = '🤖 Generate PR Description';
   generateBtn.style.opacity = '1';
   generateBtn.style.cursor = 'pointer';
-  isGenerating = false; // Reset the flag after generation
+  isGenerating = false;
 }

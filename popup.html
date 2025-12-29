@@ -141,6 +141,21 @@
         color: #ffffff;
       }
 
+      /* Template dropdown specific styles */
+      .template-dropdown {
+        max-width: 100%;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      
+      .template-dropdown option {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        max-width: 100%;
+      }
+
       /* Ensure dropdown arrow is visible */
       select::-ms-expand {
         display: block;
@@ -751,72 +766,111 @@
       <button class="btn-success" id="saveKeyBtn">💾 Save & Close</button>
     </div>
 
-    <!-- Custom Values Section -->
-    <div class="main-section" id="customValuesSection" style="display: none">
+    <!-- PR Templates Section -->
+    <div class="main-section" id="templatesSection" style="display: none">
       <div class="section-header">
-        <span>⚙️</span>
-        <span>Custom Prompt Properties</span>
+        <span>📋</span>
+        <span>PR Description Templates</span>
       </div>
       <div class="section-description">
-        Add custom key–value pairs to enhance PR context and personalization.
+        Choose a template or create your own. Use <strong>**</strong> for mandatory fields and <strong>#</strong> for optional fields.
       </div>
 
-      <div class="defaults-highlight">
-        <span class="defaults-icon">📋</span>
-        <span class="defaults-text">
-          <strong>Defaults:</strong> Purpose, Key Files Changed, Summary of
-          Changes, Notes are always included.
-        </span>
-      </div>
-
-      <div class="hardcoded-values">
-        <h6>
-          📋 Built-in Optional Sections (Can be used if your PR contains these
-          sections)
-        </h6>
-        <p
-          style="
-            font-size: 11px;
-            opacity: 0.8;
-            margin: 8px 0 12px 0;
-            font-style: italic;
-          "
-        >
-          These sections are automatically included when its relevant to the PR.
-        </p>
-        <ul>
-          <li>
-            <strong>Approach:</strong> Explain the approach, logic, or
-            architectural decisions
-          </li>
-          <li>
-            <strong>Bug Fixes:</strong> List the issue fixes if it's a bug fix
-          </li>
-          <li>
-            <strong>Refactoring:</strong> List structural/code improvements if
-            refactoring
-          </li>
-          <li>
-            <strong>Chores:</strong> List tooling, dependency updates, or
-            clean-up
-          </li>
-          <li><strong>Testing:</strong> List test cases added/updated</li>
-        </ul>
-      </div>
-
-      <div id="customValuesList">
-        <!-- Custom values will be dynamically added here -->
-      </div>
-
-      <div class="button-row">
-        <button class="view-btn" id="addCustomValueBtn">
-          ➕ Add Custom Property
+      <!-- Template Selector -->
+      <div class="template-selector" style="margin: 20px 0">
+        <label for="templateDropdown" style="display: block; margin-bottom: 8px; font-weight: 500">
+          Select Template:
+        </label>
+        <select id="templateDropdown" class="template-dropdown" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-size: 14px">
+          <option value="default">🎯 Default (Comprehensive)</option>
+          <option value="minimal">⚡ Minimal (Quick)</option>
+          <option disabled>──────────────</option>
+          <option value="__custom_section__">✏️ Manage Custom Templates...</option>
+        </select>
+        <button class="btn-success" id="saveTemplateSelectionBtn" style="width: 100%; margin-top: 10px">
+          💾 Save & Close
         </button>
       </div>
-      <div class="button-row">
-        <button class="btn-success" id="saveCustomValuesBtn">
-          💾 Save Custom Properties
-        </button>
+
+      <!-- Template Preview -->
+      <div class="template-preview" id="templatePreview" style="background: var(--card-bg); padding: 15px; border-radius: 8px; margin: 20px 0">
+        <h3 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600">Template Structure:</h3>
+        <div class="template-fields" style="line-height: 1.8; font-size: 13px">
+          <!-- Will be populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Custom Templates Section (shown when user selects "Custom Templates...") -->
+      <div id="customTemplatesSection" style="display: none; margin: 20px 0">
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; border: 2px solid var(--primary)">
+          <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: var(--primary)">
+            ✏️ Custom Templates Manager
+          </h3>
+          
+          <!-- Create New Template Button -->
+          <button class="view-btn" id="createTemplateBtn" style="width: 100%; margin-bottom: 20px">
+            ➕ Create New Template
+          </button>
+
+          <!-- Custom Templates List -->
+          <div id="customTemplatesList">
+            <h4 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600">Your Templates:</h4>
+            <div id="customTemplatesContainer" style="display: flex; flex-direction: column; gap: 10px">
+              <!-- Custom templates will be listed here -->
+            </div>
+          </div>
+
+          <!-- Back Button -->
+          <button class="btn-secondary" id="backToSelectionBtn" style="width: 100%; margin-top: 20px">
+            ← Back to Template Selection
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Template Creator/Editor -->
+      <div id="customTemplateCreator" style="display: none; margin: 20px 0; padding: 20px; background: var(--card-bg); border-radius: 8px; border: 2px solid var(--primary)">
+        <h3 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600" id="creatorTitle">Create New Template</h3>
+        
+        <div style="margin-bottom: 15px">
+          <label for="templateNameInput" style="display: block; margin-bottom: 8px; font-weight: 500">
+            Template Name: <span id="nameCharCount" style="font-size: 12px; opacity: 0.7">(0/30)</span>
+          </label>
+          <input 
+            type="text" 
+            id="templateNameInput" 
+            placeholder="e.g., Bug Fix Template" 
+            maxlength="30"
+            style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-size: 14px"
+          />
+          <p style="font-size: 11px; opacity: 0.7; margin: 5px 0 0 0">Maximum 30 characters</p>
+        </div>
+
+        <div style="margin-bottom: 15px">
+          <label for="templateFieldsInput" style="display: block; margin-bottom: 8px; font-weight: 500">
+            Template Fields:
+          </label>
+          <p style="font-size: 12px; opacity: 0.8; margin: 5px 0 10px 0">
+            Enter one field per line. Use <strong>**</strong> for mandatory fields and <strong>#</strong> for optional fields.<br>
+            Example:<br>
+            <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px">**Purpose</code><br>
+            <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px">#Screenshots</code>
+          </p>
+          <textarea 
+            id="templateFieldsInput" 
+            rows="10"
+            placeholder="**Purpose&#10;**Summary of Changes&#10;#Screenshots&#10;#Testing"
+            style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace; line-height: 1.6"
+          ></textarea>
+        </div>
+
+        <div class="button-row" style="display: flex; gap: 10px">
+          <button class="btn-success" id="saveNewTemplateBtn" style="flex: 1">
+            💾 Save Template
+          </button>
+          <button class="btn-secondary" id="cancelTemplateBtn" style="flex: 1">
+            ✖️ Cancel
+          </button>
+        </div>
       </div>
     </div>
 
@@ -830,8 +884,8 @@
       <button class="btn-secondary" id="changeKeyBtn">
         🔑 Change API Keys
       </button>
-      <button class="btn-secondary" id="customValuesBtn">
-        ⚙️ Custom Prompt Values
+      <button class="btn-secondary" id="templatesBtn">
+        📋 PR Templates
       </button>
 
       <div class="dropdown">
