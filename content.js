@@ -1,15 +1,43 @@
-function waitForPRForm(timeout = 3000) {
+function findPRFormFields() {
+  // Try multiple selectors — GitHub may use id, name, or change markup over time
+  const titleSelectors = [
+    '#pull_request_title',
+    'input[name="pull_request[title]"]',
+    'input[placeholder*="title" i][type="text"]',
+  ];
+  const bodySelectors = [
+    '#pull_request_body',
+    'textarea[name="pull_request[body]"]',
+    'textarea[placeholder*="description" i]',
+  ];
+  for (const titleSel of titleSelectors) {
+    const prTitleInput = document.querySelector(titleSel);
+    if (!prTitleInput || (prTitleInput.tagName !== 'INPUT' && prTitleInput.tagName !== 'TEXTAREA')) continue;
+    for (const bodySel of bodySelectors) {
+      const prDescInput = document.querySelector(bodySel);
+      if (prDescInput && prDescInput.tagName === 'TEXTAREA') {
+        return { prTitleInput, prDescInput };
+      }
+    }
+  }
+  return null;
+}
+
+function waitForPRForm(timeout = 8000) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
     const interval = setInterval(() => {
-      const prTitleInput = document.querySelector('#pull_request_title');
-      const prDescInput = document.querySelector('#pull_request_body');
-      if (prTitleInput && prDescInput) {
+      const found = findPRFormFields();
+      if (found) {
         clearInterval(interval);
-        resolve({ prTitleInput, prDescInput });
+        resolve(found);
       } else if (Date.now() - start > timeout) {
         clearInterval(interval);
-        reject(new Error('PR form not found'));
+        reject(
+          new Error(
+            'PR form not found.'
+          )
+        );
       }
     }, 200);
   });
