@@ -134,7 +134,8 @@ async function makeGeminiRequest(apiKey, model, prompt) {
           temperature: 0.3,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 2048,
+          // 8192 ≈ 4–6 pages; Gemini API max for most models. Use 4096 if you want shorter responses.
+          maxOutputTokens: 8192,
         },
       }),
     }
