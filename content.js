@@ -85,20 +85,25 @@ async function makeOpenAIRequest(apiKey, model, prompt) {
 async function makeGeminiRequest(apiKey, model, prompt) {
   // Map Gemini model names to actual API model names
   const modelMap = {
-    // Gemini 2.5 Series (Stable Models Only)
+    // Gemini 3 Series (Preview)
+    'gemini-3-pro-preview': 'gemini-3-pro-preview',
+    'gemini-3-flash-preview': 'gemini-3-flash-preview',
+
+    // Gemini 2.5 Series
     'gemini-2.5-pro': 'gemini-2.5-pro',
     'gemini-2.5-flash': 'gemini-2.5-flash',
+    'gemini-2.5-flash-lite': 'gemini-2.5-flash-lite',
 
-    // Gemini 2.0 Series (Stable Models Only)
+    // Gemini 2.0 Series
     'gemini-2.0-flash': 'gemini-2.0-flash',
     'gemini-2.0-flash-lite': 'gemini-2.0-flash-lite',
 
-    // Gemini 1.5 Series (Stable Models Only)
+    // Gemini 1.5 Series
     'gemini-1.5-flash': 'gemini-1.5-flash',
     'gemini-1.5-flash-8b': 'gemini-1.5-flash-8b',
     'gemini-1.5-pro': 'gemini-1.5-pro',
 
-    // Legacy models (keeping for backward compatibility)
+    // Legacy (backward compatibility)
     'gemini-1.5-flash-latest': 'gemini-1.5-flash-latest',
     'gemini-1.5-pro-latest': 'gemini-1.5-pro-latest',
     'gemini-2.0-flash-exp': 'gemini-2.0-flash-exp',
