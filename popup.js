@@ -35,7 +35,7 @@ const nameCharCount = document.getElementById('nameCharCount');
 
 let openaiKey = '';
 let geminiKey = '';
-let selectedModel = 'gpt-4o-mini';
+let selectedModel = 'gpt-5-nano';
 let selectedProvider = 'openai';
 let showOpenaiKey = false;
 let showGeminiKey = false;
@@ -530,7 +530,7 @@ window.onload = () => {
       if (data.selectedModel) {
         selectedModel = data.selectedModel;
       } else {
-        selectedModel = 'gpt-4o-mini';
+        selectedModel = 'gpt-5-nano';
       }
 
       if (data.selectedProvider) {

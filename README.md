@@ -148,25 +148,28 @@ For every PR generation, the extension:
 ### **Example: The Difference**
 
 Imagine you made these commits:
+
 ```
 feat: Add Redis caching layer
-refactor: Optimize database queries  
+refactor: Optimize database queries
 fix: Resolve connection pool leak
 ```
 
 **What you get:**
+
 ```markdown
 feat: Introduce caching to reduce database load and improve response times
 
-**Purpose**: This PR addresses performance issues identified in production. 
-The database was experiencing high load (500+ QPS) during peak hours, causing 
-3-5s response times. This caching layer reduces DB queries by 80% and improves 
+**Purpose**: This PR addresses performance issues identified in production.
+The database was experiencing high load (500+ QPS) during peak hours, causing
+3-5s response times. This caching layer reduces DB queries by 80% and improves
 response time to <500ms.
 
-**Approach**: Implemented Redis caching with intelligent TTL policies and 
+**Approach**: Implemented Redis caching with intelligent TTL policies and
 optimized query patterns to check cache first before hitting the database.
 
 **Key Changes**:
+
 - Added Redis caching layer with 5-minute TTL for hot data
 - Refactored queries to use cache-first pattern with automatic fallback
 - Fixed connection pool leak that was causing memory issues
@@ -179,15 +182,17 @@ The AI understands from your commits that you were solving a **performance probl
 To maximize the quality of generated PRs:
 
 1. **Write Descriptive Commit Messages**
+
    ```bash
    # ❌ Bad
    git commit -m "update queries"
-   
+
    # ✅ Good
    git commit -m "refactor: Optimize queries to reduce DB load by 50%"
    ```
 
 2. **Use Conventional Commits**
+
    ```bash
    feat: Add user authentication
    fix: Resolve race condition in cache
@@ -196,6 +201,7 @@ To maximize the quality of generated PRs:
    ```
 
 3. **Include Context in Commit Bodies**
+
    ```bash
    git commit -m "feat: Add Redis caching for API responses" -m "
    Our API was experiencing high load (500+ RPS) during peak hours,
@@ -204,11 +210,12 @@ To maximize the quality of generated PRs:
    ```
 
 4. **Reference Issues When Relevant**
+
    ```bash
    git commit -m "fix: Resolve memory leak in WebSocket connections
-   
+
    Closes #1234
-   
+
    The connection pool was not properly cleaning up closed connections,
    leading to memory exhaustion after ~6 hours of runtime."
    ```
@@ -242,30 +249,33 @@ If the GitHub page doesn't show commits (rare cases), the extension automaticall
 
 **🔵 OpenAI Models:**
 
-- **GPT-4o-mini** (Recommended) - Fast and cost-effective
-- **GPT-4o** - Latest model with enhanced capabilities
-- **GPT-4.1** - High-performance model
-- **GPT-3.5-turbo** - Good balance of speed and quality
-- **GPT-o1-mini, GPT-o2-mini, GPT-o3-mini, GPT-o4-mini** - Advanced reasoning models
-- **GPT-o1, GPT-o2, GPT-o3, GPT-o4** - Full performance models
-- **GPT-o3-pro** - Premium multimodal model
+- **Budget:** gpt-5-nano, gpt-4.1-nano, gpt-4.1-mini
+- **GPT-5 Series:** gpt-5.2, gpt-5.2-pro, gpt-5.1, gpt-5, gpt-5-pro, gpt-5-mini
+- **Reasoning (o-series):** o4-mini, o3, o3-pro, o1, o1-pro
+- **Premium:** gpt-4.1, gpt-4o, gpt-4
 
 **🟡 Gemini Models:**
 
+**Gemini 3 Series (Preview):**
+
+- **gemini-3-pro-preview** - Advanced intelligence and agentic coding
+- **gemini-3-flash-preview** - Frontier-class performance, cost-efficient
+
 **Gemini 2.5 Series:**
 
-- **gemini-2.5-pro** - Enhanced thinking and reasoning, multimodal understanding, advanced coding
+- **gemini-2.5-pro** - Enhanced thinking and reasoning, multimodal, advanced coding
 - **gemini-2.5-flash** - Adaptive thinking, cost efficiency
+- **gemini-2.5-flash-lite** - Cost-efficient, low latency
 
 **Gemini 2.0 Series:**
 
-- **gemini-2.0-flash** - Next generation features, speed, and realtime streaming
+- **gemini-2.0-flash** - Next generation features, speed, realtime streaming
 - **gemini-2.0-flash-lite** - Cost efficiency and low latency
 
 **Gemini 1.5 Series:**
 
-- **gemini-1.5-flash** - Fast and versatile performance across diverse tasks
-- **gemini-1.5-flash-8b** - High volume and lower intelligence tasks
+- **gemini-1.5-flash** - Fast and versatile performance
+- **gemini-1.5-flash-8b** - High volume, lower intelligence tasks
 - **gemini-1.5-pro** - High-quality responses
 
 ## 🛠️ Development

@@ -148,7 +148,7 @@
         white-space: nowrap;
         overflow: hidden;
       }
-      
+
       .template-dropdown option {
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -773,28 +773,61 @@
         <span>PR Description Templates</span>
       </div>
       <div class="section-description">
-        Choose a template or create your own. Use <strong>**</strong> for mandatory fields and <strong>#</strong> for optional fields.
+        Choose a template or create your own. Use <strong>**</strong> for
+        mandatory fields and <strong>#</strong> for optional fields.
       </div>
 
       <!-- Template Selector -->
       <div class="template-selector" style="margin: 20px 0">
-        <label for="templateDropdown" style="display: block; margin-bottom: 8px; font-weight: 500">
+        <label
+          for="templateDropdown"
+          style="display: block; margin-bottom: 8px; font-weight: 500"
+        >
           Select Template:
         </label>
-        <select id="templateDropdown" class="template-dropdown" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-size: 14px">
+        <select
+          id="templateDropdown"
+          class="template-dropdown"
+          style="
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+          "
+        >
           <option value="default">🎯 Default (Comprehensive)</option>
           <option value="minimal">⚡ Minimal (Quick)</option>
           <option disabled>──────────────</option>
-          <option value="__custom_section__">✏️ Manage Custom Templates...</option>
+          <option value="__custom_section__">
+            ✏️ Manage Custom Templates...
+          </option>
         </select>
-        <button class="btn-success" id="saveTemplateSelectionBtn" style="width: 100%; margin-top: 10px">
+        <button
+          class="btn-success"
+          id="saveTemplateSelectionBtn"
+          style="width: 100%; margin-top: 10px"
+        >
           💾 Save & Close
         </button>
       </div>
 
       <!-- Template Preview -->
-      <div class="template-preview" id="templatePreview" style="background: var(--card-bg); padding: 15px; border-radius: 8px; margin: 20px 0">
-        <h3 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600">Template Structure:</h3>
+      <div
+        class="template-preview"
+        id="templatePreview"
+        style="
+          background: var(--card-bg);
+          padding: 15px;
+          border-radius: 8px;
+          margin: 20px 0;
+        "
+      >
+        <h3 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600">
+          Template Structure:
+        </h3>
         <div class="template-fields" style="line-height: 1.8; font-size: 13px">
           <!-- Will be populated dynamically -->
         </div>
@@ -802,64 +835,150 @@
 
       <!-- Custom Templates Section (shown when user selects "Custom Templates...") -->
       <div id="customTemplatesSection" style="display: none; margin: 20px 0">
-        <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; border: 2px solid var(--primary)">
-          <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: var(--primary)">
+        <div
+          style="
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+          "
+        >
+          <h3
+            style="
+              margin: 0 0 15px 0;
+              font-size: 16px;
+              font-weight: 600;
+              color: var(--primary);
+            "
+          >
             ✏️ Custom Templates Manager
           </h3>
-          
+
           <!-- Create New Template Button -->
-          <button class="view-btn" id="createTemplateBtn" style="width: 100%; margin-bottom: 20px">
+          <button
+            class="view-btn"
+            id="createTemplateBtn"
+            style="width: 100%; margin-bottom: 20px"
+          >
             ➕ Create New Template
           </button>
 
           <!-- Custom Templates List -->
           <div id="customTemplatesList">
-            <h4 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600">Your Templates:</h4>
-            <div id="customTemplatesContainer" style="display: flex; flex-direction: column; gap: 10px">
+            <h4 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600">
+              Your Templates:
+            </h4>
+            <div
+              id="customTemplatesContainer"
+              style="display: flex; flex-direction: column; gap: 10px"
+            >
               <!-- Custom templates will be listed here -->
             </div>
           </div>
 
           <!-- Back Button -->
-          <button class="btn-secondary" id="backToSelectionBtn" style="width: 100%; margin-top: 20px">
+          <button
+            class="btn-secondary"
+            id="backToSelectionBtn"
+            style="width: 100%; margin-top: 20px"
+          >
             ← Back to Template Selection
           </button>
         </div>
       </div>
 
       <!-- Custom Template Creator/Editor -->
-      <div id="customTemplateCreator" style="display: none; margin: 20px 0; padding: 20px; background: var(--card-bg); border-radius: 8px; border: 2px solid var(--primary)">
-        <h3 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600" id="creatorTitle">Create New Template</h3>
-        
+      <div
+        id="customTemplateCreator"
+        style="
+          display: none;
+          margin: 20px 0;
+          padding: 20px;
+          background: var(--card-bg);
+          border-radius: 8px;
+          border: 2px solid var(--primary);
+        "
+      >
+        <h3
+          style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600"
+          id="creatorTitle"
+        >
+          Create New Template
+        </h3>
+
         <div style="margin-bottom: 15px">
-          <label for="templateNameInput" style="display: block; margin-bottom: 8px; font-weight: 500">
-            Template Name: <span id="nameCharCount" style="font-size: 12px; opacity: 0.7">(0/30)</span>
+          <label
+            for="templateNameInput"
+            style="display: block; margin-bottom: 8px; font-weight: 500"
+          >
+            Template Name:
+            <span id="nameCharCount" style="font-size: 12px; opacity: 0.7"
+              >(0/30)</span
+            >
           </label>
-          <input 
-            type="text" 
-            id="templateNameInput" 
-            placeholder="e.g., Bug Fix Template" 
+          <input
+            type="text"
+            id="templateNameInput"
+            placeholder="e.g., Bug Fix Template"
             maxlength="30"
-            style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-size: 14px"
+            style="
+              width: 100%;
+              padding: 10px;
+              border-radius: 6px;
+              border: 1px solid var(--border-color);
+              background: var(--bg);
+              color: var(--text);
+              font-size: 14px;
+            "
           />
-          <p style="font-size: 11px; opacity: 0.7; margin: 5px 0 0 0">Maximum 30 characters</p>
+          <p style="font-size: 11px; opacity: 0.7; margin: 5px 0 0 0">
+            Maximum 30 characters
+          </p>
         </div>
 
         <div style="margin-bottom: 15px">
-          <label for="templateFieldsInput" style="display: block; margin-bottom: 8px; font-weight: 500">
+          <label
+            for="templateFieldsInput"
+            style="display: block; margin-bottom: 8px; font-weight: 500"
+          >
             Template Fields:
           </label>
           <p style="font-size: 12px; opacity: 0.8; margin: 5px 0 10px 0">
-            Enter one field per line. Use <strong>**</strong> for mandatory fields and <strong>#</strong> for optional fields.<br>
-            Example:<br>
-            <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px">**Purpose</code><br>
-            <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px">#Screenshots</code>
+            Enter one field per line. Use <strong>**</strong> for mandatory
+            fields and <strong>#</strong> for optional fields.<br />
+            Example:<br />
+            <code
+              style="
+                background: var(--bg);
+                padding: 2px 6px;
+                border-radius: 4px;
+              "
+              >**Purpose</code
+            ><br />
+            <code
+              style="
+                background: var(--bg);
+                padding: 2px 6px;
+                border-radius: 4px;
+              "
+              >#Screenshots</code
+            >
           </p>
-          <textarea 
-            id="templateFieldsInput" 
+          <textarea
+            id="templateFieldsInput"
             rows="10"
             placeholder="**Purpose&#10;**Summary of Changes&#10;#Screenshots&#10;#Testing"
-            style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg); color: var(--text); font-size: 14px; font-family: monospace; line-height: 1.6"
+            style="
+              width: 100%;
+              padding: 10px;
+              border-radius: 6px;
+              border: 1px solid var(--border-color);
+              background: var(--bg);
+              color: var(--text);
+              font-size: 14px;
+              font-family: monospace;
+              line-height: 1.6;
+            "
           ></textarea>
         </div>
 
@@ -884,9 +1003,7 @@
       <button class="btn-secondary" id="changeKeyBtn">
         🔑 Change API Keys
       </button>
-      <button class="btn-secondary" id="templatesBtn">
-        📋 PR Templates
-      </button>
+      <button class="btn-secondary" id="templatesBtn">📋 PR Templates</button>
 
       <div class="dropdown">
         <button id="modelDropdownBtn">🤖 Select Model</button>
@@ -895,7 +1012,14 @@
             <div class="group-title">🔵 OpenAI Models</div>
 
             <div class="subgroup budget">
-              <div class="subgroup-title">💸 Budget Models</div>
+              <div class="subgroup-title">💸 Budget</div>
+              <div
+                class="option"
+                data-value="gpt-5-nano"
+                data-provider="openai"
+              >
+                gpt-5-nano
+              </div>
               <div
                 class="option"
                 data-value="gpt-4.1-nano"
@@ -905,95 +1029,96 @@
               </div>
               <div
                 class="option"
-                data-value="gpt-3.5-turbo"
-                data-provider="openai"
-              >
-                gpt-3.5-turbo
-              </div>
-              <div
-                class="option"
                 data-value="gpt-4.1-mini"
                 data-provider="openai"
               >
                 gpt-4.1-mini
               </div>
+            </div>
+
+            <div class="subgroup gpt5">
+              <div class="subgroup-title">🚀 GPT-5 Series</div>
+              <div class="option" data-value="gpt-5.2" data-provider="openai">
+                gpt-5.2
+              </div>
               <div
                 class="option"
-                data-value="gpt-4o-mini"
+                data-value="gpt-5.2-pro"
                 data-provider="openai"
               >
-                gpt-4o-mini
+                gpt-5.2-pro
+              </div>
+              <div class="option" data-value="gpt-5.1" data-provider="openai">
+                gpt-5.1
+              </div>
+              <div class="option" data-value="gpt-5" data-provider="openai">
+                gpt-5
+              </div>
+              <div class="option" data-value="gpt-5-pro" data-provider="openai">
+                gpt-5-pro
+              </div>
+              <div
+                class="option"
+                data-value="gpt-5-mini"
+                data-provider="openai"
+              >
+                gpt-5-mini
               </div>
             </div>
 
-            <div class="subgroup mini">
-              <div class="subgroup-title">🧠 Advanced Reasoning Minis</div>
-              <div
-                class="option"
-                data-value="gpt-o1-mini"
-                data-provider="openai"
-              >
-                gpt-o1-mini
+            <div class="subgroup reasoning">
+              <div class="subgroup-title">🧠 Reasoning (o-series)</div>
+              <div class="option" data-value="o4-mini" data-provider="openai">
+                o4-mini
               </div>
-              <div
-                class="option"
-                data-value="gpt-o2-mini"
-                data-provider="openai"
-              >
-                gpt-o2-mini
+              <div class="option" data-value="o3" data-provider="openai">
+                o3
               </div>
-              <div
-                class="option"
-                data-value="gpt-o3-mini"
-                data-provider="openai"
-              >
-                gpt-o3-mini
+              <div class="option" data-value="o3-pro" data-provider="openai">
+                o3-pro
               </div>
-              <div
-                class="option"
-                data-value="gpt-o4-mini"
-                data-provider="openai"
-              >
-                gpt-o4-mini
+              <div class="option" data-value="o1" data-provider="openai">
+                o1
               </div>
-            </div>
-
-            <div class="subgroup full">
-              <div class="subgroup-title">⚡ Full Performance Models</div>
-              <div class="option" data-value="gpt-o1" data-provider="openai">
-                gpt-o1
-              </div>
-              <div class="option" data-value="gpt-o2" data-provider="openai">
-                gpt-o2
-              </div>
-              <div class="option" data-value="gpt-o3" data-provider="openai">
-                gpt-o3
-              </div>
-              <div class="option" data-value="gpt-o4" data-provider="openai">
-                gpt-o4
+              <div class="option" data-value="o1-pro" data-provider="openai">
+                o1-pro
               </div>
             </div>
 
             <div class="subgroup premium">
-              <div class="subgroup-title">✨ Premium & Multimodal</div>
-              <div class="option" data-value="gpt-4o" data-provider="openai">
-                gpt-4o
-              </div>
+              <div class="subgroup-title">✨ Premium</div>
               <div class="option" data-value="gpt-4.1" data-provider="openai">
                 gpt-4.1
               </div>
-              <div
-                class="option"
-                data-value="gpt-o3-pro"
-                data-provider="openai"
-              >
-                gpt-o3-pro
+              <div class="option" data-value="gpt-4o" data-provider="openai">
+                gpt-4o
+              </div>
+              <div class="option" data-value="gpt-4" data-provider="openai">
+                gpt-4
               </div>
             </div>
           </div>
 
           <div class="group gemini-models">
             <div class="group-title">🟡 Gemini Models</div>
+
+            <div class="subgroup gemini-3">
+              <div class="subgroup-title">Gemini 3 Series (Preview)</div>
+              <div
+                class="option"
+                data-value="gemini-3-pro-preview"
+                data-provider="gemini"
+              >
+                gemini-3-pro-preview
+              </div>
+              <div
+                class="option"
+                data-value="gemini-3-flash-preview"
+                data-provider="gemini"
+              >
+                gemini-3-flash-preview
+              </div>
+            </div>
 
             <div class="subgroup gemini-2-5">
               <div class="subgroup-title">Gemini 2.5 Series</div>
@@ -1010,6 +1135,13 @@
                 data-provider="gemini"
               >
                 gemini-2.5-flash
+              </div>
+              <div
+                class="option"
+                data-value="gemini-2.5-flash-lite"
+                data-provider="gemini"
+              >
+                gemini-2.5-flash-lite
               </div>
             </div>
 
